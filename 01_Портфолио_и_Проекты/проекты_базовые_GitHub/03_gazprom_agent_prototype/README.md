@@ -1,8 +1,10 @@
-# 🏛 Проект 3: Экспресс-прототип мультиагентного конвейера (ДСИиУР ПАО «Газпром нефть»)
+# 🏛 Multi-Agent Strategy Pipeline: Enterprise Decision & Presentation Engine
 
-**Статус:** PoC Production Ready  
+**Направление:** Мультиагентные системы • Enterprise Strategy Automation • LangGraph / Reflexion  
+**Кейс реализации:** Автоматизация каскадирования стратегии (ДСИиУР ПАО «Газпром нефть»)  
+**Статус:** Production-Ready PoC  
 **Стек:** Python 3.9+, python-pptx, python-docx, Pydantic v2, Reflexion Loop, Multi-Agent Architecture  
-**Разработчик:** Лаврентий Ямпуров | AI Solutions Architect & PM  
+**Разработчик:** Лаврентий Ямпуров | AI Solutions Architect & Technical PM  
 
 ---
 

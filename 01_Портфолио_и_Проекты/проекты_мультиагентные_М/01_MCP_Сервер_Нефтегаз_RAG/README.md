@@ -31,9 +31,9 @@ formatted response → Claude
 ## Установка и запуск
 
 ```bash
-# Клонировать
-git clone https://github.com/ВАШ_НИК/oilgas-rag-mcp.git
-cd oilgas-rag-mcp
+# Клонировать репозиторий
+git clone https://github.com/Lavrentiy123/projects.git
+cd projects/01_Портфолио_и_Проекты/проекты_мультиагентные_М/01_MCP_Сервер_Нефтегаз_RAG
 
 # Виртуальное окружение
 python -m venv venv

@@ -16,8 +16,11 @@ Premium UI: Уникальный веб-интерфейс в стилистик
 ML / Backend: Python 3, PyTorch, Segmentation Models PyTorch (SMP), OpenCV, FastAPI, UvicornFrontend: HTML5, Tailwind CSS, Vanilla JavaScript
 
 📦 Установка и запуск (Локально)
-1. Клонирование репозиторияgit clone https://github.com/ВАШ_НИК/CoreVisionAI.git
-cd CoreVisionAI
+1. Клонирование репозитория:
+```bash
+git clone https://github.com/Lavrentiy123/projects.git
+cd projects/01_Портфолио_и_Проекты/проекты_инженерные_И/03_CoreVision_Керн_Сегментация
+```
 
 2. Настройка Backend-окруженияСоздайте виртуальное окружение и установите зависимости:python -m venv venv_backend
 # Активация для Windows:
