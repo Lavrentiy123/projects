@@ -8,6 +8,13 @@ import json
 import sys
 from pathlib import Path
 
+# Гарантия корректного вывода кириллицы в консоли Windows
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 def run_stockflow_forecast():
     print("=" * 70)
     print("  STOCKFLOW | ИИ-АГЕНТ ПРОГНОЗИРОВАНИЯ СПРОСА И АВТОЗАКУПОК В РИТЕЙЛЕ")
