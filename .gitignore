@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -24,8 +24,9 @@ dist/
 ~$*.pptx
 ~$*.xlsx
 
-# Logs
+# Logs & reports
 *.log
+**/reports/
 
 # Personal files
 04_Личные_документы/

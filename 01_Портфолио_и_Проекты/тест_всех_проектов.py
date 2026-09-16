@@ -17,69 +17,49 @@ if sys.platform == "win32":
 ROOT_DIR = Path(__file__).resolve().parent
 
 TESTS = [
-    # 1. Базовые прикладные проекты (Газпром нефть)
+    # 1. Прикладные продуктовые и бизнес-проекты
     {
-        "name": "01. Мониторинг рынка E-commerce (API ЦБ РФ)",
+        "name": "01. Мониторинг рынка E-commerce (Pydantic v2 + Anomaly Detection)",
         "folder": ROOT_DIR / "проекты_базовые_GitHub" / "01_market_monitor_ecommerce",
         "cmd": [sys.executable, "run.py"]
     },
     {
-        "name": "02. Экспресс-аудит договоров B2B (Red Flags)",
+        "name": "02. Экспресс-аудит договоров B2B (Red Flags Decision Engine)",
         "folder": ROOT_DIR / "проекты_базовые_GitHub" / "02_contract_risk_checker",
         "cmd": [sys.executable, "run.py"]
     },
     {
-        "name": "03. Мультиагентный конвейер ДСИиУР (Reflexion + PPTX)",
+        "name": "03. Мультиагентный конвейер ДСИиУР (Reflexion + PPTX Генератор)",
         "folder": ROOT_DIR / "проекты_базовые_GitHub" / "03_gazprom_agent_prototype",
         "cmd": [sys.executable, "run.py"]
     },
-    # 2. Проекты Ильи (Industrial ML / CV / MLOps)
+    # 2. Индустриальный ML и промышленная телеметрия (со специалистами из смежных отделов)
     {
-        "name": "04. DrillSense: Прогноз ROP бурения (Equinor Volve)",
+        "name": "04. DrillSense: Прогноз ROP бурения (Equinor Volve, R2=0.892)",
         "folder": ROOT_DIR / "проекты_инженерные_И" / "01_DrillSense_Бурение",
         "cmd": [sys.executable, "quick_predict_demo.py"]
     },
     {
-        "name": "05. PumpGuard: Скоринг отказа насосов (IoT MLOps)",
+        "name": "05. PumpGuard: Скоринг отказа насосов (IoT MLOps, ClickHouse)",
         "folder": ROOT_DIR / "проекты_инженерные_И" / "02_PumpGuard_Насосы_MLOps",
         "cmd": [sys.executable, "quick_score_demo.py"]
     },
+    # 3. Мультиагентные системы и LLM/RAG (со специалистами из технологических компаний)
     {
-        "name": "06. CoreVision: Анализ шлифов керна (Пористость)",
-        "folder": ROOT_DIR / "проекты_инженерные_И" / "03_CoreVision_Керн_Сегментация",
-        "cmd": [sys.executable, "quick_segment_demo.py"]
-    },
-    {
-        "name": "07. SafeTrack: Контроль опасных зон буровой (HSE)",
-        "folder": ROOT_DIR / "проекты_инженерные_И" / "04_SafeTrack_Промбезопасность",
-        "cmd": [sys.executable, "quick_safetrack_demo.py"]
-    },
-    # 3. Проекты Максима (AI Agents / RAG / MCP)
-    {
-        "name": "08. OilGas MCP Server: Семантический поиск ГОСТ/ФНП",
+        "name": "06. OilGas MCP Server: Семантический контекстный поиск (FastMCP + Qdrant)",
         "folder": ROOT_DIR / "проекты_мультиагентные_М" / "01_MCP_Сервер_Нефтегаз_RAG",
         "cmd": [sys.executable, "test_oilgas_mcp.py"]
     },
     {
-        "name": "09. Дайджест нефти Brent: Технический анализ и прогноз",
-        "folder": ROOT_DIR / "проекты_мультиагентные_М" / "02_Дайджест_Рынка_Нефти_Brent",
-        "cmd": [sys.executable, "run_market_analytics.py"]
-    },
-    {
-        "name": "10. Multi-Agent Judge: Контур самокритики Evaluator-Optimizer",
-        "folder": ROOT_DIR / "проекты_мультиагентные_М" / "03_Мультиагентная_Система_Judge",
+        "name": "07. Multi-Agent Judge: Контур самокритики Evaluator-Optimizer (Reflexion)",
+        "folder": ROOT_DIR / "проекты_мультиагентные_М" / "02_Мультиагентная_Система_Judge",
         "cmd": [sys.executable, "agent_evaluator_optimizer.py"]
-    },
-    {
-        "name": "11. RAG Бот Нефтегаз: Поиск регламентов ГНВП без галлюцинаций",
-        "folder": ROOT_DIR / "проекты_мультиагентные_М" / "04_RAG_Бот_Нефтегаз_Документы",
-        "cmd": [sys.executable, "test_rag_offline.py"]
     }
 ]
 
 def main():
     print("=" * 85)
-    print("  КОМПЛЕКСНАЯ ПРОВЕРКА РАБОТОСПОСОБНОСТИ ВСЕХ 11 ПРОЕКТОВ ПОРТФОЛИО")
+    print("  КОМПЛЕКСНАЯ ПРОВЕРКА РАБОТОСПОСОБНОСТИ ОСНОВНЫХ ПРОЕКТОВ ПОРТФОЛИО")
     print("  Разработчик: Лаврентий Ямпуров | AI Solutions Architect & PM")
     print("=" * 85)
     
@@ -90,7 +70,7 @@ def main():
         cwd = item["folder"]
         cmd = item["cmd"]
         
-        print(f"[{i:02d}/11] Запуск: {name} ...", end=" ", flush=True)
+        print(f"[{i:02d}/{len(TESTS):02d}] Запуск: {name} ...", end=" ", flush=True)
         try:
             res = subprocess.run(
                 cmd,

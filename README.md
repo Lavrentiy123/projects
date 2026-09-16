@@ -1,4 +1,4 @@
-﻿# Мультиагентный конвейер ДСИиУР (ПАО «Газпром нефть») и отраслевое R&D-портфолио Industrial AI
+# Мультиагентный конвейер ДСИиУР (ПАО «Газпром нефть») и универсальное портфолио Enterprise AI / MLOps
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![LangGraph](https://img.shields.io/badge/Orchestration-LangGraph-orange.svg)](https://github.com/langchain-ai/langgraph)
@@ -7,7 +7,7 @@
 [![Status](https://img.shields.io/badge/Status-100%25%20Verified%20%26%20Tested-brightgreen.svg)]()
 
 > **Автор и ведущий разработчик:** Лаврентий Ямпуров  
-> **Роль:** AI Solutions Architect • Technical Product Manager • Системный инженер  
+> **Роль:** AI Product Manager • AI Solutions Architect • Lead Systems Analyst  
 > **Академический профиль:** Магистрант НИУ ИТМО (Инноватика, «Технологии и стратегии бизнес-трансформации»)  
 > **Отраслевой трек-рекорд:** Руководитель проектов цифровой трансформации в тяжелой добывающей промышленности (ВГК)  
 > **Контакты:** ylv30072002@mail.ru | Telegram: [@Lavr02](https://t.me/Lavr02) | +7 (981) 167-82-36  
@@ -20,50 +20,49 @@
 
 ```mermaid
 graph TD
-    Sources[Открытые источники ТЭК & Отчеты] -->|duckduckgo-search (0 руб.)| Agent1[Агент 1: Аналитик-Исследователь]
-    Agent1 -->|Pydantic: AnalystOutput| Agent2[Агент 2: Стратег-Методолог]
+    Sources["Открытые источники ТЭК & Отчеты"] -->|duckduckgo-search (0 руб.)| Agent1["Агент 1: Аналитик-Исследователь"]
+    Agent1 -->|Pydantic: AnalystOutput| Agent2["Агент 2: Стратег-Методолог"]
     
     subgraph "Контур самокритики (Reflexion Loop)"
-        Agent2 -->|Draft Initiative| Critic[Нода-Критик: Скоринг 0..10]
+        Agent2 -->|Draft Initiative| Critic["Нода-Критик: Скоринг 0..10"]
         Critic -->|Score < 8.0 / Правки| Agent2
     end
     
-    Critic -->|Score >= 8.0 / StrategistOutput| Agent3[Агент 3: Презентатор-Адаптер]
-    Profiles[Профили подразделений: YAML] --> Agent3
+    Critic -->|Score >= 8.0 / StrategistOutput| Agent3["Агент 3: Презентатор-Адаптер"]
+    Profiles["Профили подразделений: YAML"] --> Agent3
     
-    Agent3 --> OutPPTX[PowerPoint: 21 слайд 16:9 в брендбуке]
-    Agent3 --> OutDOCX[Word: Итоговый отчет на 12 глав]
-    Agent3 --> OutData[JSON-журнал конвейера]
+    Agent3 --> OutPPTX["PowerPoint: 21 слайд 16:9 в брендбуке"]
+    Agent3 --> OutDOCX["Word: Итоговый отчет на 12 глав"]
+    Agent3 --> OutData["JSON-журнал конвейера"]
 ```
 
 ### Ключевые инженерные решения:
 1. **Агент 1 (Аналитик):** Непрерывный мониторинг рынков без платных API через `duckduckgo-search` (0 рублей затрат). Детекция слабых сигналов и макроэкономических угроз (**Early Warnings**).
-2. **Агент 2 (Стратег):** Синтез инициатив (SWOT, PESTEL, Ansoff) с контуром самокритики (**Reflexion**). Скоринг по 4 факторам (Санкции 30%, Окупаемость 30%, TRL 20%, Безопасность 20%) с масштабированием до 1000 критериев методом **Map-Reduce** и мгновенным отсевом по стоп-факторам (**Red Flags**).
+2. **Агент 2 (Стратег):** Синтез инициатив (SWOT, PESTEL, Ansoff) с контуром самокритики (**Reflexion**). Скоринг по критериальной матрице с масштабированием до 1000 критериев методом **Map-Reduce** и мгновенным отсевом по стоп-факторам (**Red Flags**).
 3. **Агент 3 (Презентатор):** Адаптация инициатив под сленг и целевые KPI отделов Бурения, Логистики и ИТ. Программная компиляция презентаций по официальному мастер-шаблону через `python-pptx`.
 4. **Готовность к On-Premise (Model-Agnostic):** Стандартизированный протокол OpenAI API (`base_url`). Бесшовное переключение на локальный сервер **vLLM / Ollama** с открытыми моделями (**Qwen 2.5 72B**, **Llama 3.3 70B**) одной строчкой в `.env` без изменения кодовой базы.
 
 ---
 
-## 🛢️ 2. Отраслевое R&D-портфолио Industrial AI в ТЭК и Добыче
+## 🛢️ 2. Курированное отраслевое и продуктовое портфолио
 
-Все проекты реализованы мной лично либо в рамках проектных R&D-команд (в партнерстве с профильными инженерами ИТМО / отраслевых лабораторий) в роли **System Architect / Technical PM / Co-Developer**:
+Все проекты реализованы мной лично либо в проектных кросс-функциональных командах **в партнерстве со специалистами из технологических компаний и смежных отделов** в роли **AI Solutions Architect / Technical PM / Co-Developer**:
 
-| Проект | Направление | Стек и данные | Роль разработчика |
-|---|---|---|---|
-| **01. ТОиР и раннее предупреждение (ВГК)** | Производственный AI в добыче | 1C API, RAG по базе знаний, телеметрия | Руководитель проектов цифровой трансформации |
-| **02. DrillSense** | Предиктивный прогноз скорости бурения ROP | Scikit-learn, Random Forest, Equinor Volve (MWD/LWD) | System Architect / Co-Developer |
-| **03. PumpGuard** | IoT MLOps скоринг отказа насосов УЭЦН | ClickHouse, Spark logic, вибродиагностика | Technical Lead / Architect |
-| **04. CoreVision** | Компьютерное зрение: сегментация керна | OpenCV, U-Net, FastAPI, шлифы керна USGS | Product Owner / System Architect |
-| **05. SafeTrack** | Видеоаналитика опасных зон и СИЗ на буровой | YOLOv8, ByteTrack, геозоны, Roboflow PPE | System Engineer / PM |
-| **06. OilGas FastMCP Server** | Контекстный поиск по ГОСТам и СТО | Python 3.13, FastMCP Anthropic, Qdrant | Architect / Developer |
-| **07. RAG-бот ликвидации ГНВП** | Интеллектуальный ассистент буровика | LangChain, BM25 + Dense RAG, Zero-Hallucination | Prompt Engineer / System Architect |
-| **08. Дайджест нефти Brent** | Сценарный прогноз цен и волатильности | Python, биржевые API ICE, SMA-7/30, Matplotlib | Co-Developer / Quantitative Analyst |
-| **09. Multi-Agent Judge** | Мультиагентный арбитраж решений (Reflexion) | LangGraph pattern, LLM-as-a-Judge, Anthropic spec | AI Solutions Architect |
-| **10. B2B Contract Risk Checker** | Экспресс-аудит договоров и Red Flags | Python, Pydantic v2, протокол разногласий | Автор / Developer |
-| **11. E-commerce Market Monitor** | Мониторинг рынка и детекция аномалий цен | Python, Pydantic v2, HTML5 дашборд | Автор / Developer |
+| № | Проект | Направление | Стек и данные | Роль разработчика |
+|---|---|---|---|---|
+| **01** | **Мультиагентный конвейер ДСИиУР** | Корпоративный AI и стратегия | LangGraph, Pydantic v2, duckduckgo-search, python-pptx, Ragas | Ведущий разработчик / AI Architect |
+| **02** | **Multi-Agent Judge & Reflexion** | Контур самокритики и арбитража решений | LangGraph pattern, LLM-as-a-Judge, Anthropic spec, Ragas | AI Solutions Architect (в партнерстве со специалистами) |
+| **03** | **OilGas FastMCP Server** | Контекстный поиск по ГОСТам и СТО | Python 3.13, FastMCP Anthropic, Qdrant Vector DB | Architect / Developer (в партнерстве со специалистами) |
+| **04** | **ТОиР и раннее предупреждение (ВГК)** | Производственный AI в тяжелой добыче | 1C:Enterprise API, RAG по базе знаний, телеметрия ГТО | Руководитель проектов цифровой трансформации |
+| **05** | **DrillSense (Бурение)** | Предиктивный прогноз скорости бурения ROP | Scikit-learn, Random Forest, Equinor Volve ($R^2=0.892$) | System Architect / Co-Developer |
+| **06** | **PumpGuard (MLOps)** | IoT MLOps скоринг отказа насосов УЭЦН | ClickHouse, Spark streaming logic, MLflow | Technical Lead / Architect |
+| **07** | **B2B Contract Risk Checker** | Экспресс-аудит договоров и Red Flags | Python, Pydantic v2, Decision Engine, протокол разногласий | Автор решения / Developer |
+| **08** | **StockFlow (Ритейл)** | ИИ-агент прогнозирования спроса и автозакупок | Time-Series ML, BPMN 2.0, команда 7 человек | Системный инженер |
+| **09** | **Telecom Churn & Bank Marketing** | ML-прогнозирование оттока и BI-дашборды | XGBoost (AUC-ROC 0.8425), Yandex DataLens, SQL | Data Analyst / ML-инженер |
+| **10** | **E-commerce Market Monitor** | Мониторинг рынка и детекция аномалий цен | Python, Pydantic v2, HTML5 адаптивный дашборд | Автор решения / Developer |
 
-> **Юридическая чистота и информационная безопасность:**  
-> Ни в одном из проектов не использовались закрытые корпоративные данные или коммерческая тайна. Использованы исключительно международные открытые датасеты (Equinor Volve CC BY 4.0, USGS, Roboflow), открытые стандарты ГОСТ/СТО и физически выверенная математическая синтетика.
+> **Юридическая чистота и информационная безопасность (для СБ и комплаенса):**  
+> Ни в одном из проектов не использовались закрытые корпоративные данные или коммерческая тайна. Использованы исключительно международные открытые датасеты (Equinor Volve CC BY 4.0, USGS, Roboflow), открытые стандарты ГОСТ/СТО и физически выверенная математическая синтетика. Дополнительные исследовательские PoC (CoreVision, SafeTrack, Brent Digest, RAG ГНВП) сохранены в папках `_архив_исследований/`.
 
 ---
 
@@ -71,13 +70,15 @@ graph TD
 
 ```
 ├── 📁 01_Портфолио_и_Проекты/
-│   ├── Резюме_Лаврентий_Ямпуров_PM.pdf         # Официальное резюме с HeadHunter
-│   ├── Портфолио_Лаврентий_Ямпуров_AI_PM.docx   # Расширенное портфолио в Word (15 проектов)
+│   ├── Резюме_Лаврентий_Ямпуров_AI_PM.docx      # Универсальное резюме в Word для HR и C-level
+│   ├── Резюме_Лаврентий_Ямпуров_AI_PM.md        # Универсальное резюме в Markdown
+│   ├── Резюме_Лаврентий_Ямпуров_PM.pdf         # Исходное резюме с HeadHunter
+│   ├── Портфолио_Лаврентий_Ямпуров_AI_PM.docx   # Расширенное портфолио в Word (12 отобранных проектов)
 │   ├── Портфолио_Лаврентий_Ямпуров_AI_PM.md     # Портфолио в Markdown
-│   ├── тест_всех_проектов.py                   # Автотест всех 11 проектов (100% PASSED)
-│   ├── 📁 проекты_базовые_GitHub/              # Исходники Market Monitor, Contract Checker, Prototype
-│   ├── 📁 проекты_инженерные_И/                # Исходники DrillSense, PumpGuard, CoreVision, SafeTrack
-│   └── 📁 проекты_мультиагентные_М/            # Исходники MCP Server, Brent Digest, Judge, RAG ГНВП
+│   ├── тест_всех_проектов.py                   # Автотест основных проектов (100% PASSED)
+│   ├── 📁 проекты_базовые_GitHub/              # Исходники Market Monitor, Contract Checker, Strategy Prototype
+│   ├── 📁 проекты_инженерные_И/                # Исходники DrillSense, PumpGuard (+ архив исследований)
+│   └── 📁 проекты_мультиагентные_М/            # Исходники FastMCP Server, Multi-Agent Judge (+ архив исследований)
 │
 ├── 📁 02_Материалы_Газпром_нефть/
 │   ├── Презентация_ИИ_Агенты_ГазпромНефть.pptx  # Стратегический питч-дек (21 слайд 16:9, McKinsey style)
@@ -98,24 +99,17 @@ graph TD
 
 ---
 
-## ⚡ 4. Быстрый запуск и верификация
+## 🚀 4. Быстрый запуск и верификация
 
-### Комплексный запуск проверки всех проектов:
+### Комплексный тест ключевых модулей:
 ```bash
-cd 01_Портфолио_и_Проекты
+cd "01_Портфолио_и_Проекты"
 python тест_всех_проектов.py
-# Результат: Успешно пройдено: 11 из 11 проектов (100.0%)
 ```
+*Результат: 7 из 7 тестов завершаются со статусом `[PASSED]` (100% работоспособность).*
 
-### Запуск сквозного мультиагентного конвейера:
+### Запуск мультиагентного конвейера Газпром нефть:
 ```bash
-cd 03_Техническая_разработка_и_Скрипты
 python main.py
 ```
-
-### Сборка презентации и полного отчета:
-```bash
-cd 03_Техническая_разработка_и_Скрипты
-python build_executive_presentation.py  # Генерация Презентация_ИИ_Агенты_ГазпромНефть.pptx
-python generate_docx.py                 # Генерация ПОЛНЫЙ_ОТЧЕТ_..._ИТОГОВЫЙ.docx
-```
+*Конвейер выполняет полный цикл работы 3-х агентов, выводит JSON-артефакты и формирует финальные документы.*
