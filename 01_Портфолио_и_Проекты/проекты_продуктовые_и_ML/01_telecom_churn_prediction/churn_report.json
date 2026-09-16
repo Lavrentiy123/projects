@@ -1,0 +1,40 @@
+{
+  "project": "Telecom Churn Prediction",
+  "dataset_size": 7043,
+  "best_model": "Logistic Regression",
+  "auc_roc": 0.8425,
+  "accuracy": 0.8034,
+  "top_factors": [
+    {
+      "feature": "Contract_Month-to-month",
+      "importance": 0.312,
+      "desc": "Помесячный контракт без долгосрочных обязательств"
+    },
+    {
+      "feature": "tenure_months (< 12)",
+      "importance": 0.245,
+      "desc": "Срок жизни абонента менее 1 года"
+    },
+    {
+      "feature": "MonthlyCharges (> $75)",
+      "importance": 0.188,
+      "desc": "Высокий ежемесячный чек без персональной скидки"
+    },
+    {
+      "feature": "InternetService_FiberOptic",
+      "importance": 0.134,
+      "desc": "Высокие ожидания по скорости и чувствительность к сбоям"
+    },
+    {
+      "feature": "PaymentMethod_ElectronicCheck",
+      "importance": 0.121,
+      "desc": "Ручная оплата электронным чеком без автоплатежа"
+    }
+  ],
+  "recommendations": [
+    "Внедрить предиктивный скоринг оттока в CRM с еженедельным пересчетом риск-индекса.",
+    "Предлагать клиентам с помесячным тарифом перевод на годовой контракт со скидкой 15% на 6-м месяце жизни.",
+    "Стимулировать подключение автоплатежа (скидка 100 руб. на 3 месяца) для ухода от электронных чеков."
+  ],
+  "presentation_link": "https://docs.google.com/presentation/d/1F-zmeWsoK9N36dUIy9wTz1WhveyvmVYG/edit?usp=sharing"
+}

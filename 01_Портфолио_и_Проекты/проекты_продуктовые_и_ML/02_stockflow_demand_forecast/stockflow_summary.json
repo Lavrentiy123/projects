@@ -1,0 +1,36 @@
+{
+  "kpi": {
+    "forecast_accuracy": "75.4% (MAPE 24.6%)",
+    "shelf_deficit_reduction": "-15.2%",
+    "procurement_automation": "58.0%",
+    "team_size": 7,
+    "methodology": "Scrumban + BPMN 2.0 + User Stories",
+    "presentation": "https://docs.google.com/presentation/d/15nC8xzPXrTYodyBwwZRlJSDey06OYHEKwI0ocs4V1ic/edit?usp=sharing"
+  },
+  "orders": [
+    {
+      "category": "Молочная продукция (Fresh)",
+      "order_qty": 2930,
+      "lead_time": 2,
+      "status": "ТРЕБУЕТСЯ ЗАКАЗ"
+    },
+    {
+      "category": "Хлебобулочные изделия",
+      "order_qty": 1920,
+      "lead_time": 1,
+      "status": "ТРЕБУЕТСЯ ЗАКАЗ"
+    },
+    {
+      "category": "Бакалея и крупы",
+      "order_qty": 2100,
+      "lead_time": 5,
+      "status": "ТРЕБУЕТСЯ ЗАКАЗ"
+    },
+    {
+      "category": "Напитки и соки",
+      "order_qty": 2500,
+      "lead_time": 3,
+      "status": "ТРЕБУЕТСЯ ЗАКАЗ"
+    }
+  ]
+}
