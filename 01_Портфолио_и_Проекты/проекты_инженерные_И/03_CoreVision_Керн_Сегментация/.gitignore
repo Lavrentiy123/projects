@@ -1,0 +1,41 @@
+Виртуальные окружения
+
+venv_backend/
+venv_frontend/
+env/
+venv/
+.env
+
+Кэш Python и скомпилированные файлы
+
+pycache/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+Веса моделей машинного обучения (слишком тяжелые для Git)
+
+weights/
+*.pth
+*.pt
+*.onnx
+*.h5
+
+Данные (датасеты)
+
+data/
+*.zip
+*.tar.gz
+*.csv
+
+Системные файлы
+
+.DS_Store
+Thumbs.db
+
+Логи и временные файлы
+
+logs/
+*.log
+tmp/

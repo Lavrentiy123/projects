@@ -1,0 +1,953 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "chatIds": "YOUR_TELEGRAM_CHAT_ID"
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -672,
+        272
+      ],
+      "id": "4a231313-35e3-4c41-9e5d-6ad9a282e51c",
+      "name": "Постановка задачи",
+      "webhookId": "b2202a45-d029-4ac1-9cc6-ea82f47fb900"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "4a88cb5e-e3a3-4678-85ff-a7a8d7884518",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "=/main",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -224,
+        384
+      ],
+      "id": "40c79939-c425-456f-9e14-4f0357aaf7e1",
+      "name": "Обработка команды /main"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text.replace('/main ', '').replace('/main', '') }}",
+        "options": {
+          "systemMessage": "You are a senior technical project manager. Your job is to receive a raw task description from the user, analyze it, fill in the gaps, and produce two clear task briefs: one for the coder and one for the reviewer (tester).\nYou communicate exclusively in Russian. You never use markdown formatting in your responses: no headers with # symbols, no bold with ** or __, no italic with * or _, no bullet points with - or *, no numbered lists, no backticks, no fenced code blocks, no tables, no horizontal rules. Write everything as plain continuous text with line breaks between paragraphs.\nHOW YOU THINK\nThe user often gives you a brief, incomplete, or vague request. Your job is to turn that into a fully realized task. You do this by following a strict mental process before writing anything.\nFirst, you identify what the user actually wants. Read the request and determine the core goal. What should exist at the end that does not exist now? What problem is being solved?\nSecond, you fill in the missing details yourself. The user has not configured a back-and-forth clarification flow, so you do NOT ask questions. Instead, you make reasonable assumptions based on common sense, best practices, and the most likely intent. You think about what technology fits, what the user interface should look like, what data is involved, what edge cases matter, and what the user probably expects but did not say.\nThird, you document your assumptions explicitly so the user can see what you decided and correct you if needed.\nFourth, you split the work into two briefs: one for the coder who builds it, one for the reviewer who checks it.\nRESPONSE STRUCTURE\nEvery response must contain exactly three sections in this order.\nSection one is your analysis. Start it with the line:\nАНАЛИЗ ЗАДАЧИ\nHere you write a short paragraph (3 to 6 sentences) explaining what you understood from the user's request, what the core goal is, and what key decisions you made on behalf of the user. List your assumptions as a plain text block, each assumption on its own line, prefixed with the word \"Допущение:\" so they are easy to spot. For example:\nДопущение: интерфейс будет веб-страницей, так как платформа не указана.\nДопущение: данные хранятся в JSON-файле, так как база данных не упоминалась.\nДопущение: авторизация не нужна, так как речь идёт о локальном инструменте.\nMake between 2 and 6 assumptions depending on how vague the request is. If the request is already detailed, you may have zero assumptions, but this is rare.\nSection two is the coder's task. Start it with the line:\n/coder\nBelow this tag, write a complete technical brief that the coder can take and implement without asking further questions. The brief must cover the following in plain text paragraphs:\nWhat to build: a clear one-sentence summary of the deliverable.\nFunctional requirements: describe every feature and behavior the code must have. Be specific. Instead of \"the page should look nice\" write \"the page has a centered container, maximum width 800 pixels, with a header showing the project name and a list of items below it.\"\nTechnical constraints: which language or stack to use (Python, HTML/CSS/JS, or both), any libraries to prefer or avoid, file structure if multiple files are needed.\nInput and output: what data comes in, what the program does with it, what comes out.\nEdge cases to handle: what should happen with empty input, invalid data, missing files, or unexpected user actions.\nWhat NOT to do: any explicit things to avoid, like unnecessary dependencies, overengineering, or features the user did not ask for.\nWrite this section as if you are giving instructions to a developer who is competent but has zero context about the project. Everything they need must be in this brief.\nSection three is the reviewer's task. Start it with the line:\n/review\nBelow this tag, write a testing checklist that the reviewer must go through after the coder delivers. The checklist is written as plain text, each check on its own line, starting with a short label followed by a colon and the specific thing to verify. For example:\nЗапуск: код запускается без ошибок с указанными инструкциями.\nОсновной сценарий: при вводе корректных данных результат соответствует описанию в задаче кодера.\nПустой ввод: при пустых данных программа не падает и выдаёт понятное сообщение.\nThe checklist must cover: successful launch, main functionality (happy path), each edge case mentioned in the coder's brief, code quality (readability, no hardcoded values, proper error handling), and completeness (nothing missing from the brief).\nThe reviewer must also verify that the coder's output matches every point of the /coder brief. If something is missing or deviates, the reviewer flags it.\nRULES FOR FILLING IN GAPS\nWhen the user's request is vague, use these decision-making defaults:\nIf no platform is specified and the task involves a visual interface, assume a web page (HTML/CSS/JS). If the task is data processing, automation, or a script, assume Python.\nIf no design details are given, assume a clean minimal design: white background, readable font (16px base), centered content, responsive layout.\nIf no data storage is mentioned, assume the simplest option: a local file (JSON or CSV) for small data, SQLite for anything that needs queries.\nIf no error handling requirements are mentioned, assume the program should handle common failures gracefully: missing files, empty input, wrong data types, network errors (if applicable).\nIf the scope is ambiguous, choose the smaller scope. Build the minimum that solves the problem. Do not invent features the user did not ask for, but do invent the necessary technical details to make the requested features work.\nAlways prefer simplicity over cleverness. If two approaches solve the problem and one is simpler, pick the simpler one.\nWHAT YOU DO NOT DO\nYou do not ask the user questions. You make decisions and state them as assumptions.\nYou do not write code. That is the coder's job.\nYou do not test code. That is the reviewer's job.\nYou do not use markdown formatting in any part of your response.\nYou do not add features the user did not ask for, but you do fill in the technical details needed to implement what they asked for.\nYou do not produce empty or vague briefs. Every /coder section must have enough detail to start coding immediately. Every /review section must have enough checks to verify the result thoroughly.\nEXAMPLE\nUser input: сделай трекер привычек\nYour response:\nАНАЛИЗ ЗАДАЧИ\nПользователь хочет трекер привычек. Из запроса не ясна платформа, набор функций и способ хранения данных. Я принимаю решения по всем неуказанным параметрам и формирую задачи.\nДопущение: это веб-приложение, одна HTML-страница с CSS и JS внутри, так как платформа не указана.\nДопущение: привычки хранятся в localStorage браузера, так как серверная часть не запрашивалась.\nДопущение: пользователь может добавлять, удалять и отмечать привычки по дням.\nДопущение: отображается текущая неделя с возможностью отмечать выполнение за каждый день.\nДопущение: дизайн минималистичный, адаптивный, без внешних фреймворков.\n/coder\nЧто сделать: одностраничное веб-приложение для отслеживания ежедневных привычек.\nФункциональность. Вверху страницы находится поле ввода и кнопка для добавления новой привычки. Ниже отображается таблица, где строки это привычки, а столбцы это дни текущей недели (понедельник по воскресенье). Каждая ячейка это чекбокс, который можно отметить как выполненный. Справа от названия привычки есть кнопка удаления. При перезагрузке страницы все данные сохраняются.\nТехнические требования. Один HTML-файл, CSS и JS внутри файла. Никаких внешних библиотек и фреймворков. Данные хранить в localStorage в формате JSON. Ключ хранения \"habit-tracker-data\". Страница должна корректно отображаться на экранах от 360 пикселей.\nОбработка краевых случаев. Если пользователь пытается добавить привычку с пустым названием, ничего не происходит, поле подсвечивается красным. Если localStorage недоступен, показать текстовое предупреждение вверху страницы. Дублирование имён привычек допускается.\nЧего не делать. Не добавлять авторизацию, не добавлять статистику за прошлые недели, не использовать внешние библиотеки.\n/review\nЗапуск: открыть HTML-файл в браузере, страница загружается без ошибок в консоли.\nДобавление привычки: ввести название, нажать кнопку, привычка появляется в таблице с чекбоксами на 7 дней.\nПустое название: попытка добавить привычку без текста не создаёт строку, поле подсвечивается.\nОтметка выполнения: клик по чекбоксу меняет состояние, при перезагрузке страницы состояние сохраняется.\nУдаление: нажатие кнопки удаления убирает привычку из таблицы и из localStorage.\nСохранение данных: после добавления 3 привычек и отметки нескольких дней перезагрузить страницу, все данные на месте.\nАдаптивность: открыть страницу на экране шириной 360 пикселей, таблица читаема и не вылезает за экран.\nКод: нет внешних зависимостей, нет хардкода, переменные и функции имеют понятные имена.\nПолнота: все пункты из задачи кодера реализованы, ничего не пропущено."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        288,
+        672
+      ],
+      "id": "086324c5-2e78-4353-a71e-0860e972f068",
+      "name": "MAIN AGENT",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "mode": "list",
+          "cachedResultName": "google/gemini-2.5-flash-lite-preview-09-2025"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        304,
+        896
+      ],
+      "id": "23c9ac1f-885c-448f-a929-ba148df06d47",
+      "name": "GEMINI"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ты получил задачи без правильных тегов. Добавь к каждой задаче соответствующий тег:\n- /coder — для задач по написанию кода\n- /review — для задач по ревью и тестированию\nВот задачи без тегов:\n{{ $('MAIN AGENT').item.json.output }}\nВерни задачи с правильными тегами в формате:\n/coder текст задачи\n/review текст задачи\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2032,
+        576
+      ],
+      "id": "27ac898a-3336-4b09-b475-9b8b865a9e03",
+      "name": "ПРАВЕР ТЕГОВ",
+      "executeOnce": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "mode": "list",
+          "cachedResultName": "google/gemini-2.5-flash-lite-preview-09-2025"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1968,
+        784
+      ],
+      "id": "795bc813-9c3e-4603-8752-cb43bfeed179",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.output.replace(/\\\\n/g, '\\n');\nconst parts = text.split(/(?=\\/coder|\\/review)/g).filter(p => p.trim());\n\nreturn parts.map(part => ({\n  json: {\n    tag: part.match(/^\\/(coder|review)/)?.[1] || 'unknown',\n    content: part.replace(/^\\/(coder|review)\\s*/, '').trim()\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        672
+      ],
+      "id": "920c7113-4804-4acd-848c-11250f9f0f95",
+      "name": "Разделение по тегам"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.tag }}",
+                    "rightValue": "coder",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "12f20a7e-15fb-4b6e-a556-fa4857d97922"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "6192e9d4-b654-4207-acf3-88b448bfe147",
+                    "leftValue": "={{ $json.tag }}",
+                    "rightValue": "review",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a08bfccf-7903-4871-be2d-a7121ff2f1bc",
+                    "leftValue": "={{ $json.tag }}",
+                    "rightValue": "error",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1504,
+        640
+      ],
+      "id": "d7a32706-b6a6-4cb4-a050-d1637821da93",
+      "name": "В зависимости от тега передаем"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Берём retryCount из входа ПРАВЕР ТЕГОВ, а не из его выхода\nconst previousRetry = $('В зависимости от тега передаем').first().json.retryCount || 0;\nconst retryCount = previousRetry + 1;\n\nconst text = ($input.first().json.output || '').replace(/\\\\n/g, '\\n');\n\n// Если больше 3 попыток — ошибка\nif (retryCount > 2) {\n  return [{\n    json: {\n      tag: 'error',\n      content: 'Ошибка: не удалось разметить задачи тегами после 3 попыток. Попробуйте переформулировать задачу.\\n\\nИсходный текст:\\n' + text,\n      retryCount: retryCount\n    }\n  }];\n}\n\nconst parts = text.split(/(?=\\/coder|\\/review)/g).filter(p => p.trim());\n\nconst results = parts\n  .map(part => ({\n    json: {\n      tag: part.match(/^\\/(coder|review)/)?.[1] || 'unknown',\n      content: part.replace(/^\\/(coder|review)\\s*/, '').trim(),\n      retryCount: retryCount\n    }\n  }))\n  .filter(item => item.json.tag !== 'unknown');\n\nif (results.length === 0) {\n  return [{\n    json: {\n      tag: 'unknown',\n      content: text,\n      retryCount: retryCount\n    }\n  }];\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2288,
+        1024
+      ],
+      "id": "13c153c1-44d4-4f8d-b8ad-56264f4c8b26",
+      "name": "Разделение по тегам1"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.content }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2624,
+        752
+      ],
+      "id": "15db40a8-ba0b-4202-b6e0-06439a67ec7e",
+      "name": "Ошибка зацикливания",
+      "webhookId": "c8303d24-2ce6-41b5-b411-f4a1fd5eee29"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/main",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "f551597a-0c67-43f9-840d-af2c510a4377"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c4695bdb-2530-45b3-a2f7-fedb1c7863af",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/coder",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "710465bc-b966-4dfd-a76a-ed718758e08d",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "/review",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        240
+      ],
+      "id": "5b26687e-4469-4658-886c-273c3d836ec2",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "=YOUR_TELEGRAM_CHAT_ID",
+        "text": "Вы отправили пустое сообщение или сообщение без тега, используйте тег /main /coder /review",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        336,
+        288
+      ],
+      "id": "8ab60df5-fb8a-4618-91c4-8e4c11cf636d",
+      "name": "Сообщение об ошибке",
+      "webhookId": "cc5089a6-0d17-405e-9c65-676ff3a49463"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9c3ce230-61c5-451f-9fa5-808b19288ced",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/coder",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "0c8f1950-c911-4d4c-9156-f10ab873ee66",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/coder",
+              "operator": {
+                "type": "string",
+                "operation": "notEndsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a27463cf-bff2-468c-b335-b6d5e16fffde",
+      "name": "Пустота /coder"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c2ba5a30-ad12-4a9f-b088-cb76431c3373",
+              "leftValue": "={{ $json.message.text.replace('/main', '').trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        576
+      ],
+      "id": "94ae20b7-5355-4e5f-80ec-c6af3ecb16cd",
+      "name": "Пустота /main"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c0e5f509-0e51-4960-9795-587625caec4d",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/review",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "6c550c67-1814-4aaf-88a3-37258daca4de",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "/review",
+              "operator": {
+                "type": "string",
+                "operation": "notEndsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        1200
+      ],
+      "id": "b5f7a21c-5efb-4d76-a65c-441d2322ce4c",
+      "name": "Пустота /review"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_CODER_WORKFLOW_ID",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/YOUR_CODER_WORKFLOW_ID",
+          "cachedResultName": "CODER"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "text",
+              "displayName": "text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "textreview",
+              "displayName": "textreview",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "mode": "each",
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        2560,
+        16
+      ],
+      "id": "c84d34a0-8a8e-43d3-80d6-586c626a359e",
+      "name": "Вызов CODER"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e37d4356-7335-4a72-ac8f-5d65888e5c46",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        320,
+        0
+      ],
+      "id": "2501de6b-67a9-48e3-96f8-45415ee1c8fe",
+      "name": "Преобразуем в text"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "21498ba8-4cb1-4795-a6d4-04c9cc45b190",
+              "name": "textreview",
+              "value": "=/{{ $json.tag }} {{ $json.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        864
+      ],
+      "id": "6864bab0-30f4-4943-b3af-efe41706c1d6",
+      "name": "Добавляем тег ревью"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c698708b-1409-4e2e-89c5-d51e3fe0eee8",
+              "name": "textreview",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        448,
+        1248
+      ],
+      "id": "f43fa0fe-511a-4e19-a4f7-0312d724df9b",
+      "name": "Преобразуем в text1"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_REVIEWER_WORKFLOW_ID",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/YOUR_REVIEWER_WORKFLOW_ID",
+          "cachedResultName": "REVIEWER"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1712,
+        1264
+      ],
+      "id": "8f230e9a-4b16-4d60-bcb3-5d4304a5aeed",
+      "name": "Call 'REVIEWER'"
+    },
+    {
+      "parameters": {
+        "jsCode": "const combined = {};\n\nfor (const item of $input.all()) {\n  for (const [key, value] of Object.entries(item.json)) {\n    if (value !== null && value !== undefined && value !== '') {\n      combined[key] = value;\n    }\n  }\n}\n\nreturn [{ json: combined }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2320,
+        192
+      ],
+      "id": "043dd588-6f94-47ad-bc03-69396acce52b",
+      "name": "собираем вместе"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2064,
+        208
+      ],
+      "id": "fe71fc3f-7ced-4eb6-a23d-53fe3086fb29",
+      "name": "Дожидаемся чтобы ушло одновременно"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2fd742df-9bdf-47d5-9825-fe5d22ec3ce7",
+              "name": "text",
+              "value": "=/{{ $json.tag }} {{ $json.content }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1808,
+        272
+      ],
+      "id": "595944dc-06ec-4452-bfbc-eadcf2c1aa4a",
+      "name": "Добавляем тег кодер"
+    }
+  ],
+  "connections": {
+    "Постановка задачи": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Обработка команды /main": {
+      "main": [
+        [
+          {
+            "node": "Пустота /main",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Сообщение об ошибке",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MAIN AGENT": {
+      "main": [
+        [
+          {
+            "node": "Разделение по тегам",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GEMINI": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "MAIN AGENT",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ПРАВЕР ТЕГОВ": {
+      "main": [
+        [
+          {
+            "node": "Разделение по тегам1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ПРАВЕР ТЕГОВ",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Разделение по тегам": {
+      "main": [
+        [
+          {
+            "node": "В зависимости от тега передаем",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "В зависимости от тега передаем": {
+      "main": [
+        [
+          {
+            "node": "Добавляем тег кодер",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Добавляем тег ревью",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ошибка зацикливания",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ПРАВЕР ТЕГОВ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Разделение по тегам1": {
+      "main": [
+        [
+          {
+            "node": "В зависимости от тега передаем",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Обработка команды /main",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Пустота /coder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Пустота /review",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Сообщение об ошибке",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Пустота /coder": {
+      "main": [
+        [
+          {
+            "node": "Преобразуем в text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Сообщение об ошибке",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Пустота /main": {
+      "main": [
+        [
+          {
+            "node": "MAIN AGENT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Сообщение об ошибке",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Пустота /review": {
+      "main": [
+        [
+          {
+            "node": "Преобразуем в text1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Сообщение об ошибке",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Преобразуем в text": {
+      "main": [
+        [
+          {
+            "node": "Вызов CODER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Добавляем тег ревью": {
+      "main": [
+        [
+          {
+            "node": "Дожидаемся чтобы ушло одновременно",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Преобразуем в text1": {
+      "main": [
+        [
+          {
+            "node": "Call 'REVIEWER'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "собираем вместе": {
+      "main": [
+        [
+          {
+            "node": "Вызов CODER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Дожидаемся чтобы ушло одновременно": {
+      "main": [
+        [
+          {
+            "node": "собираем вместе",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Добавляем тег кодер": {
+      "main": [
+        [
+          {
+            "node": "Дожидаемся чтобы ушло одновременно",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
+}

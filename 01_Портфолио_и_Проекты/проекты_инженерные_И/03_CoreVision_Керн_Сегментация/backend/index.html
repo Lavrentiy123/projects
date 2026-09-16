@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoreVision AI | Анализ керна</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #060b14; /* Глубокий сумеречный синий */
+            color: #e2e8f0;
+        }
+        
+        /* Пленочное зерно (Noise) как на референсе */
+        .noise-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            opacity: 0.35;
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Мягкая анимация загрузки */
+        .loader { border-top-color: #f472b6; animation: spinner 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Эффект стекла для карточек */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col relative overflow-x-hidden selection:bg-fuchsia-900 selection:text-fuchsia-100">
+
+    <!-- Ambient Background (Сферы и нефтяные градиенты) -->
+    <div class="fixed inset-0 z-[-3] bg-[#060b14]"></div>
+    <div class="noise-overlay"></div>
+    
+    <!-- Имитация розовой светящейся сферы из референса -->
+    <div class="fixed bottom-0 left-1/2 -translate-x-1/2 translate-y-1/3 w-[600px] h-[600px] bg-fuchsia-500/20 rounded-full blur-[100px] z-[-2] pointer-events-none"></div>
+    <!-- Имитация густого "нефтяного" хвойно-зеленого цвета сверху -->
+    <div class="fixed top-[-20%] left-[-10%] w-[800px] h-[800px] bg-teal-900/10 rounded-full blur-[120px] z-[-2] pointer-events-none"></div>
+
+    <!-- Header -->
+    <header class="w-full px-8 py-6 flex items-center justify-between z-10">
+        <div class="flex items-center gap-3">
+            <!-- Элегантный логотип -->
+            <div class="w-8 h-8 rounded-full border border-fuchsia-500/30 flex items-center justify-center bg-white/5 backdrop-blur-md">
+                <div class="w-3 h-3 bg-fuchsia-400/80 rounded-full shadow-[0_0_10px_rgba(232,121,249,0.8)]"></div>
+            </div>
+            <span class="text-sm font-medium tracking-wide text-slate-200">CoreVision AI</span>
+        </div>
+        <div class="text-xs font-light tracking-wider text-slate-400">
+            Модуль петрофизического анализа
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-1 w-full max-w-4xl mx-auto px-4 flex flex-col items-center justify-center py-8 z-10">
+        
+        <!-- Заголовок -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-light text-slate-100 mb-4 tracking-tight">
+                Анализ структуры <span class="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-300 to-rose-200 font-normal">коллектора</span>
+            </h1>
+            <p class="text-sm text-slate-400 font-light max-w-lg mx-auto leading-relaxed">
+                Загрузите снимок нефтеносного керна. Нейросеть выделит зоны трещиноватости для оценки проницаемости породы.
+            </p>
+        </div>
+
+        <!-- Центральная Soft-Glass Карточка -->
+        <div class="glass-card w-full rounded-[2.5rem] p-6 md:p-10 transition-all duration-500">
+            
+            <!-- Зона загрузки -->
+            <div id="upload-section" class="flex flex-col items-center">
+                <label for="dropzone-file" id="dropzone-label" class="flex flex-col items-center justify-center w-full h-56 rounded-[2rem] border border-white/10 border-dashed cursor-pointer bg-white/[0.01] hover:bg-white/[0.03] hover:border-fuchsia-400/30 transition-all duration-300 group">
+                    <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+                        <div class="w-14 h-14 mb-4 rounded-full bg-white/5 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 group-hover:bg-fuchsia-500/10">
+                            <svg class="w-6 h-6 text-slate-400 group-hover:text-fuchsia-300 transition-colors" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z"></path></svg>
+                        </div>
+                        <p class="text-sm text-slate-300 font-medium mb-1">Выбрать снимок керна</p>
+                        <p class="text-xs text-slate-500 font-light">JPG, PNG до 5 MB</p>
+                    </div>
+                    <input id="dropzone-file" type="file" class="hidden" accept="image/jpeg, image/png" />
+                </label>
+            </div>
+
+            <!-- Блок управления (появляется после загрузки) -->
+            <div id="action-section" class="hidden flex flex-col items-center w-full mt-6 animate-fade-in">
+                <!-- Инфо о файле -->
+                <div class="flex items-center gap-4 mb-8 bg-white/5 px-6 py-3 rounded-full border border-white/5">
+                    <span id="file-name" class="text-sm font-light text-slate-300">sample_core_01.jpg</span>
+                    <button id="clear-file" class="text-slate-500 hover:text-fuchsia-400 transition-colors" title="Удалить">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <!-- Нежная кнопка запуска -->
+                <button id="predict-btn" class="px-10 py-4 bg-gradient-to-r from-fuchsia-900/40 to-rose-900/40 border border-fuchsia-500/20 text-fuchsia-100 rounded-full hover:from-fuchsia-800/50 hover:to-rose-800/50 transition-all font-medium flex items-center gap-3 disabled:opacity-50 shadow-[0_0_20px_rgba(244,114,182,0.1)] hover:shadow-[0_0_30px_rgba(244,114,182,0.2)]">
+                    <span id="btn-text">Начать сканирование</span>
+                    <div id="btn-loader" class="hidden loader ease-linear rounded-full border-2 border-t-2 border-transparent h-4 w-4"></div>
+                </button>
+                
+                <div id="error-msg" class="hidden mt-4 text-sm text-red-400 font-light">
+                    <span id="error-text">Ошибка сервера</span>
+                </div>
+            </div>
+
+            <!-- Зона результатов -->
+            <div id="preview-container" class="hidden mt-10 w-full">
+                <div class="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent mb-10"></div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Original -->
+                    <div class="flex flex-col gap-3">
+                        <span class="text-xs font-light tracking-wide text-slate-500 text-center uppercase">Оригинал породы</span>
+                        <div class="aspect-square rounded-[2rem] overflow-hidden bg-black/20 border border-white/5 p-2">
+                            <img id="img-original" class="w-full h-full object-cover rounded-[1.5rem] opacity-90" src="" alt="Оригинал">
+                        </div>
+                    </div>
+                    
+                    <!-- Mask -->
+                    <div class="flex flex-col gap-3">
+                        <span class="text-xs font-light tracking-wide text-fuchsia-300/70 text-center uppercase">Карта трещиноватости</span>
+                        <div class="aspect-square rounded-[2rem] overflow-hidden bg-black/40 border border-fuchsia-500/10 p-2 relative">
+                            <img id="img-result" class="w-full h-full object-cover rounded-[1.5rem] absolute inset-2 z-10 hidden" style="width: calc(100% - 16px); height: calc(100% - 16px);" src="" alt="Результат">
+                            <div id="result-placeholder" class="w-full h-full flex flex-col items-center justify-center text-xs font-light text-slate-500 rounded-[1.5rem] bg-white/[0.02]">
+                                Ожидание сканирования...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <!-- JavaScript -->
+    <script>
+        const fileInput = document.getElementById('dropzone-file');
+        const predictBtn = document.getElementById('predict-btn');
+        const btnText = document.getElementById('btn-text');
+        const btnLoader = document.getElementById('btn-loader');
+        
+        const uploadSection = document.getElementById('upload-section');
+        const actionSection = document.getElementById('action-section');
+        const previewContainer = document.getElementById('preview-container');
+        
+        const imgOriginal = document.getElementById('img-original');
+        const imgResult = document.getElementById('img-result');
+        const resultPlaceholder = document.getElementById('result-placeholder');
+        
+        const errorMsg = document.getElementById('error-msg');
+        const errorText = document.getElementById('error-text');
+        
+        const fileName = document.getElementById('file-name');
+        const clearFileBtn = document.getElementById('clear-file');
+        const dropzoneLabel = document.getElementById('dropzone-label');
+
+        let selectedFile = null;
+
+        function resetFile() {
+            selectedFile = null;
+            fileInput.value = '';
+            
+            // Восстанавливаем UI
+            actionSection.classList.add('hidden');
+            previewContainer.classList.add('hidden');
+            errorMsg.classList.add('hidden');
+            
+            dropzoneLabel.classList.remove('hidden');
+            uploadSection.classList.remove('hidden');
+        }
+
+        clearFileBtn.addEventListener('click', resetFile);
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                
+                fileName.textContent = file.name;
+                
+                // Прячем зону загрузки, показываем кнопку
+                uploadSection.classList.add('hidden');
+                actionSection.classList.remove('hidden');
+                previewContainer.classList.remove('hidden');
+
+                imgOriginal.src = URL.createObjectURL(file);
+                imgResult.src = "";
+                imgResult.classList.add("hidden");
+                resultPlaceholder.classList.remove("hidden");
+                resultPlaceholder.textContent = 'Ожидание сканирования...';
+                
+                errorMsg.classList.add("hidden");
+            }
+        });
+
+        predictBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            predictBtn.disabled = true;
+            btnText.textContent = "Анализ текстуры...";
+            btnLoader.classList.remove("hidden");
+            errorMsg.classList.add("hidden");
+            imgResult.classList.add("hidden");
+            resultPlaceholder.classList.remove("hidden");
+            resultPlaceholder.innerHTML = '<div class="loader ease-linear rounded-full border-2 border-t-2 border-fuchsia-400 h-6 w-6 mb-3"></div><span class="text-fuchsia-300/50">Генерация маски...</span>';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch('/predict', { method: 'POST', body: formData });
+                if (!response.ok) throw new Error(`Код: ${response.status}`);
+
+                const imageBlob = await response.blob();
+                const imageObjectURL = URL.createObjectURL(imageBlob);
+                
+                imgResult.src = imageObjectURL;
+                imgResult.classList.remove("hidden");
+                resultPlaceholder.classList.add("hidden");
+
+            } catch (error) {
+                console.error("Network Error:", error);
+                errorText.textContent = "Сбой: " + error.message;
+                errorMsg.classList.remove("hidden");
+                resultPlaceholder.innerHTML = 'Сбой операции';
+            } finally {
+                predictBtn.disabled = false;
+                btnText.textContent = "Начать сканирование";
+                btnLoader.classList.add("hidden");
+            }
+        });
+    </script>
+</body>
+</html>

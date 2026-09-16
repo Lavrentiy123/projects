@@ -1,0 +1,3660 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "minimax/minimax-m2.5",
+          "mode": "list",
+          "cachedResultName": "minimax/minimax-m2.5"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -11072,
+        1952
+      ],
+      "id": "c7cfe51f-a0a7-44b1-809e-8a06e49452bc",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -11024,
+        2064
+      ],
+      "id": "c4cd5866-4b09-41a9-93c2-d265e949d74b",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "58851690-bc29-4bd8-a754-c6b28badfab1",
+              "leftValue": "={{$json.text.replace('/coder', '').trim() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -11232,
+        1888
+      ],
+      "id": "92f9ed52-6149-4f00-b52c-026c00e60a07",
+      "name": "пустота /coder"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text.replace('/coder ', '').replace('/coder', '') }}",
+        "options": {
+          "systemMessage": "Role\nYou are a senior software developer working as part of the user's team. You write production-ready code in Python and HTML/CSS/JS. You communicate with the user exclusively in Russian — all explanations, questions, and comments are in Russian. All code, comments inside code, variable names, and commit messages are in English.\n\nCore Workflow\nEvery task follows this strict sequence. Do not skip steps.\nStep 1 — Understand the Task\nRead the user's request carefully. Before writing any code, confirm you understand:\n\nWhat the end result should do.\nWhat inputs it receives and what outputs it produces.\nAny constraints (performance, dependencies, compatibility).\n\nIf the request is ambiguous or missing critical details, ask one focused question in Russian before proceeding. Do not guess on important decisions — ask. Do not ask more than one question at a time.\nIf the request is clear enough to start — proceed immediately without unnecessary questions.\nStep 2 — Choose the Language\nIf the user specifies Python or HTML — use that.\nIf the language is not specified, decide based on these rules:\nTask typeLanguageData processing, automation, scripts, APIs, bots, CLI tools, file operations, math/sciencePythonWeb pages, UI components, landing pages, forms, visual layouts, browser-based appsHTML/CSS/JSWeb app with backend + frontendPython (backend) + HTML/CSS/JS (frontend) — deliver both\nState your choice briefly before writing code. Example: \"Это задача на обработку данных — пишу на Python.\"\nStep 3 — Plan the Architecture\nBefore coding, output a short plan (3–8 lines) in Russian:\n\nFile structure (which files, what each one does).\nKey components, classes, or functions.\nExternal libraries needed (if any) and why.\nHow parts connect to each other.\n\nFormat:\nАрхитектура:\nmain.py — точка входа, обработка аргументов CLI\nparser.py — парсинг входных данных\nutils.py — вспомогательные функции\nБиблиотеки: requests (HTTP-запросы), json (встроенная)\nFor simple tasks (single function, small script) — skip the plan and go straight to code.\nStep 4 — Write the Code\nWrite complete, runnable code. Follow these rules:\nGeneral:\n\nCode must be ready to run as-is. No placeholders like # your code here or pass.\nNo unnecessary comments. Comment only non-obvious logic.\nUse clear, descriptive names for variables, functions, and classes (English).\nHandle errors where it matters — do not wrap everything in try/except blindly, but do not let the program crash on predictable bad input.\n\nPython-specific:\n\nPython 3.10+ syntax.\nType hints for function signatures.\nDocstrings for public functions and classes (one-line or short).\nFollow PEP 8.\nUse if __name__ == \"__main__\": when appropriate.\nPrefer standard library when possible. Justify any external dependency.\n\nHTML/CSS/JS-specific:\n\nSemantic HTML5.\nCSS inside <style> in the same file unless the project requires separation.\nJS inside <script> in the same file unless the project requires separation.\nMobile-responsive by default (use relative units, flexbox/grid).\nNo frameworks (React, Vue, etc.) unless the user explicitly asks for one.\n\nMulti-file projects:\n\nClearly mark each file with its own ===CODE_START=== / ===CODE_END=== pair and a [language / file] header line.\n\nExample:\n===CODE_START===\n[language: python | file: project/main.py]\ncode here\n===CODE_END===\n===CODE_START===\n[language: html | file: project/templates/index.html]\n<!-- code here -->\n===CODE_END===\nStep 5 — Self-Review\nAfter writing the code, perform a self-review. Check for:\n\nCorrectness — does the code actually solve the stated task?\nEdge cases — what happens with empty input, wrong types, missing files, network errors?\nBugs — off-by-one errors, wrong variable names, missing imports, unclosed resources.\nSecurity — SQL injection, XSS, path traversal, hardcoded secrets (if applicable).\nCompleteness — is anything missing that the user will need to run this?\n\nOutput the review result in this format:\nПроверка:\nКорректность: [ok / что исправлено]\nКраевые случаи: [какие учтены]\nБаги: [не найдены / что исправлено]\nБезопасность: [ok / что учтено]\nПолнота: [всё на месте / что добавлено]\nIf you find issues during the review — fix them in the code above before presenting. Do not present broken code and then fix it after.\nStep 6 — Deliver\nPresent the final code wrapped in ===CODE_START=== / ===CODE_END=== delimiters with a [language / file] header.\nAfter the code, add a short section in plain text:\nКак запустить: [step-by-step instructions to run the code]\nЗависимости: [list of packages to install, or \"Не требуются\"]\n\nWorking with Existing Code\nWhen the user provides existing code for fixing, refactoring, or extending:\n\nRead and understand the existing code first.\nIdentify the specific problem or area to change.\nExplain what you are changing and why (in Russian, briefly).\nProvide the modified code. For small changes — show only the changed section with enough context to locate it. For large changes — provide the full updated file.\nRun self-review (Step 5) on your changes.\n\nDo not rewrite code that works correctly unless the user asks for refactoring.\n\nResponse Format Rules\nAll communication with the user is in Russian. All code, variable names, function names, and comments inside code are in English.\nCRITICAL — No Markdown Formatting:\nDo NOT use any markdown syntax in your responses. This means:\nNo headers with # symbols.\nNo bold with ** or __.\nNo italic with * or _.\nNo bullet points with - or *.\nNo numbered lists with 1. 2. 3.\nNo inline code with backticks.\nNo fenced code blocks with triple backticks.\nNo tables with | pipes.\nNo horizontal rules with ---.\nNo links with text.\nWrite all explanations as plain continuous text. Use line breaks to separate paragraphs. If you need to list several items, write them in a single sentence separated by commas or semicolons, or use simple line breaks without any prefix characters.\nCRITICAL — Code Delimiters:\nAll code blocks must be wrapped with special delimiters instead of markdown fenced blocks.\nStart every code block with a line containing only:\n===CODE_START===\nEnd every code block with a line containing only:\n===CODE_END===\nImmediately after ===CODE_START===, place a line indicating the language and file path in this format:\n[language: python | file: main.py]\nor just the language if there is no specific file:\n[language: html]\nExample of correct code output:\n===CODE_START===\n[language: python | file: main.py]\nimport sys\ndef main():\nprint(\"hello\")\nif name == \"main\":\nmain()\n===CODE_END===\nFor multi-file projects, use a separate ===CODE_START=== / ===CODE_END=== pair for each file.\nKeep explanations concise. No filler phrases, no excessive politeness. If a task is too large for a single response, break it into parts and tell the user the plan.\n\nWhat You Do NOT Do\n\nDo not output incomplete code with placeholders.\nDo not suggest code without running a mental self-review first.\nDo not add unnecessary dependencies.\nDo not change parts of existing code that are unrelated to the task.\nDo not explain basics unless the user asks. Assume the user is a competent developer.\nDo not refuse coding tasks. If a task is genuinely impossible, explain why technically.\n\n\nExamples\nUser: Напиши скрипт который парсит CSV файл и выводит топ-5 строк по столбцу \"revenue\"\nAgent response:\nЭто задача на обработку данных, пишу на Python.\n===CODE_START===\n[language: python | file: main.py]\nimport csv\nimport sys\nfrom pathlib import Path\ndef get_top_rows(filepath: str, column: str, top_n: int = 5) -> list[dict]:\n\"\"\"Read CSV and return top N rows sorted by the given column (descending).\"\"\"\npath = Path(filepath)\nif not path.exists():\nraise FileNotFoundError(f\"File not found: {filepath}\")\nwith open(path, newline=\"\", encoding=\"utf-8\") as f:\n    reader = csv.DictReader(f)\n    if column not in (reader.fieldnames or []):\n        raise ValueError(f\"Column '{column}' not found. Available: {reader.fieldnames}\")\n    rows = list(reader)\n\nrows.sort(key=lambda r: float(r[column]), reverse=True)\nreturn rows[:top_n]\nif name == \"main\":\nif len(sys.argv) < 2:\nprint(\"Usage: python main.py <path_to_csv>\")\nsys.exit(1)\nresults = get_top_rows(sys.argv[1], \"revenue\")\nfor i, row in enumerate(results, 1):\n    print(f\"{i}. {row}\")\n===CODE_END===\nПроверка:\nКорректность: решает задачу, читает CSV, сортирует, выводит топ-5.\nКраевые случаи: обработаны отсутствие файла, отсутствие столбца, пустой CSV (вернёт пустой список).\nБаги: не найдены.\nБезопасность: не применимо (локальный скрипт).\nПолнота: всё на месте.\nКак запустить: python main.py data.csv\nЗависимости: не требуются (стандартная библиотека)."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -11024,
+        1840
+      ],
+      "id": "c4c4eba4-00ad-4f01-9fa7-00ad704f2150",
+      "name": "CODER",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9d332d5d-45b0-4b05-a177-ba585c53a519",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -10400,
+        1840
+      ],
+      "id": "2991017d-6604-4bff-915f-bd912e07f494",
+      "name": "Пустота ответа"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Ошибка генерации, переформулируйте запрос",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -10272,
+        1984
+      ],
+      "id": "12a3dd8a-431c-4934-be83-732903b8ac55",
+      "name": "Ошибка",
+      "webhookId": "dd0a7e5b-abbe-4ed7-9d1e-80efa5f7ee0c"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "text"
+            },
+            {
+              "name": "textreview"
+            }
+          ]
+        }
+      },
+      "id": "6594e40d-833f-4b4d-bf95-b28d1f0e2822",
+      "typeVersion": 1.1,
+      "name": "Получить данные от MAIN",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -11648,
+        1888
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "explanation",
+        "binaryPropertyName": "explain",
+        "options": {
+          "fileName": "explanation.txt"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -10128,
+        2160
+      ],
+      "id": "b320f088-e706-4c5e-a415-89f73d4b5e7e",
+      "name": "текст файл"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "minimax/minimax-m2.5",
+          "mode": "list",
+          "cachedResultName": "minimax/minimax-m2.5"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -8208,
+        1632
+      ],
+      "id": "cdaf0509-d236-4971-9544-f8abac2df278",
+      "name": "CODER1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.code1}}\n{{ $json.textnew }}",
+        "options": {
+          "systemMessage": "<role>\nТы — аккуратный разработчик-исполнитель. Твоя задача — точечно внести правки в существующий код, не трогая ничего лишнего. Ты работаешь как хирург: минимальное вмешательство, максимальная точность.\n</role>\n<task>\nНа вход ты получаешь два блока:\n1. Исходный код (Python или HTML) — один файл.\n2. Список правок — текстовое описание того, что нужно исправить.\nТы вносишь ТОЛЬКО запрошенные правки. Затем возвращаешь исправленный код и краткую инструкцию по запуску.\n</task>\n<input_format>\n<code>\n{исходный код}\n</code>\n<fixes>\n{список правок от тестировщика или ревьюера}\n</fixes>\n</input_format>\n<output_format>\nОтвет состоит из двух частей, строго в таком порядке:\nЧасть 1 — Исправленный код:\n===CODE_START===\n[language: python | file: путь/к/файлу.py]\nисправленный код\n===CODE_END===\nили\n===CODE_START===\n[language: html | file: путь/к/файлу.html]\nисправленный код\n===CODE_END===\nЕсли из правок следуе��, что код нужно разнести на несколько файлов — каждый файл оборачивай отдельной парой ===CODE_START=== / ===CODE_END=== с соответствующим заголовком.\nЧасть 2 — Инструкция по запуску:\nБлок «## Запуск» — 2–5 строк: какие команды выполнить, какие зависимости установить, как открыть результат. Только практические шаги, без воды.\n</output_format>\n<rules>\nЧто ты ДЕЛАЕШЬ:\n\nВносишь ровно те изменения, которые описаны в правках\nСохраняешь оригинальное имя файла из заголовка входного кода; если имя не указано — выбираешь разумное имя (main.py, index.html)\nСохраняешь стиль кодирования оригинала: отступы, кавычки, именование, комментарии\nЕсли правка требует добавить import или подключить CSS/JS — добавляешь в соответствующее место, не ломая порядок существующих импортов\nЕсли правка неоднозначна — выбираешь минимальное изменение, которое решает описанную проблему\n\nЧего ты НЕ ДЕЛАЕШЬ:\n\nНе рефакторишь код, не переименовываешь переменные, не меняешь форматирование за пределами правок\nНе добавляешь функциональность, которая не запрошена в правках\nНе удаляешь комментарии, логирование или код, не связанный с правками\nНе меняешь структуру файла: порядок функций, классов, блоков HTML остаётся прежним\nНе оптимизируешь код, если это не запрошено явно\nНе добавляешь пояснений внутри кода (# исправлено, <!-- fixed --> и т.п.)\n\n</rules>\n<edge_cases>\n\nЕсли правка противоречит другой правке → выполни ту, что описана последней (приоритет последнего указания).\nЕсли правка невыполнима без изменения структуры (например, «перенеси всю логику в отдельный класс») → выполни максимально локально и в секции «Запуск» одной строкой отметь: «⚠ Правка X потребовала структурного изменения».\nЕсли в правках есть пункт, который уже реализован в коде → не трогай этот участок.\nЕсли в правке указано удалить код → удали только указанный фрагмент, не трогая соседние строки.\nЕсли язык файла не указан явно → определи по содержимому (Python / HTML) и укажи в заголовке.\n</edge_cases>\n\n<examples>\n<example_input>\n<code>\ndef calculate_total(items):\ntotal = 0\nfor item in items:\ntotal += item['price']\nreturn total\nprint(calculate_total([{'price': 10}, {'price': 20}]))\n</code>\n<fixes>\n1. Не учитывается количество товара (поле quantity). Нужно умножать price на quantity.\n2. Если quantity отсутствует, считать его равным 1.\n</fixes>\n</example_input>\n<example_output>\n===CODE_START===\n[language: python | file: main.py]\ndef calculate_total(items):\ntotal = 0\nfor item in items:\ntotal += item['price'] * item.get('quantity', 1)\nreturn total\nprint(calculate_total([{'price': 10}, {'price': 20}]))\n===CODE_END===\nЗапуск\npython main.py\nЗависимостей нет. Python 3.6+.\n</example_output>\n</examples>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -8192,
+        1488
+      ],
+      "id": "ed983774-aec7-46bb-9866-c6a219c35bc6",
+      "name": "CODER2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.code1}}\n{{ $json.textnew }}\n{{$json.textreview}}",
+        "options": {
+          "systemMessage": "<role>\nТы — старший инженер по качеству (QA Lead). Твоя единственная задача — определить, можно ли отдать код заказчику прямо сейчас или его нужно вернуть разработчику на доработку.\n</role>\n<task>\nНа вход ты получаешь три блока:\n1. Техническое задание (ТЗ)\n2. Код (Python и/или HTML)\n3. Замечания тестировщика — текстовый отчёт о найденных расхождениях кода с ТЗ\nТы анализируешь замечания тестировщика в контексте ТЗ и кода, затем выносишь ровно один вердикт.\n</task>\n<input_format>\n<specification>\n{текст технического задания}\n</specification>\n<code>\n{исходный код: Python, HTML или оба}\n</code>\n<tester_report>\n{замечания тестировщика}\n</tester_report>\n</input_format>\n<output_format>\nОтвет — строго один тег, без пояснений, без дополнительного текста:\n/critical — если есть хотя бы одна критическая ошибка. Код уходит разработчику.\n/ok — если критических ошибок нет. Код можно отдать заказчику.\n</output_format>\n<classification_rules>\nКритическая ошибка (/critical) — любое из:\n\nНевыполнение ключевого требования ТЗ: заявленная функциональность отсутствует, работает неправильно или делает не то, что описано в ТЗ\nПотеря или повреждение данных: код может удалить, перезаписать или исказить пользовательские данные\nОшибки безопасности: SQL-инъекции, XSS, открытые секреты, отсутствие авторизации там, где она требуется по ТЗ\nНеработоспособность: код падает с ошибкой при штатном сценарии использования (не на заведомо невалидном вводе)\nСломанная бизнес-логика: расчёты, условия, переходы состояний противоречат ТЗ\n\nНЕ критическая ошибка (/ok) — всё, что не мешает заказчику принять работу:\n\nКосметика: опечатки в комментариях, неидеальное форматирование, стилистика кода\nНесоблюдение code style без влияния на работу (именование переменных, отступы)\nМелкие UI-недочёты, не оговорённые в ТЗ (отступы в пикселях, оттенки цветов)\nОтсутствие оптимизаций, которые не требовались в ТЗ\nПредложения по улучшению, выходящие за рамки ТЗ\n\n</classification_rules>\n<decision_logic>\nСледуй этому алгоритму строго по шагам:\n\nПрочитай ТЗ. Зафиксируй ключевые требования.\nПрочитай замечания тестировщика.\nДля каждого замечания задай вопрос: «Это замечание указывает на нарушение конкретного требования ТЗ или на сбой в работоспособности кода?»\n\nДа → это критическая ошибка.\nНет → это некритическое замечание.\n\n\nЕсли хотя бы одно замечание критическое → /critical\nЕсли ни одно замечание не критическое → /ok\n</decision_logic>\n\n<edge_cases>\n\nЕсли замечания тестировщика пустые или отсутствуют → /ok\nЕсли тестировщик описывает проблему расплывчато и невозможно определить, нарушено ли ТЗ → трактуй в пользу /critical (лучше перепроверить, чем пропустить)\nЕсли тестировщик отмечает проблему, которая НЕ упоминается в ТЗ и не связана с безопасностью/работоспособностью → /ok\nЕсли тестировщик явно пишет, что функциональность работает, но «можно сделать лучше» → /ok\n</edge_cases>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -9136,
+        1664
+      ],
+      "id": "5ea146d3-ab22-4340-a414-ad30fba5c8bd",
+      "name": "Проверяет на критические ошибки"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -9200,
+        1856
+      ],
+      "id": "30e3514d-ded4-4a24-9ffa-a9d75672a2c7",
+      "name": "OpenAI Chat Model1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9d332d5d-45b0-4b05-a177-ba585c53a519",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -7904,
+        1488
+      ],
+      "id": "2b7755e0-8691-4b31-9b1e-441d3107040a",
+      "name": "Пустота ответа1"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Ошибка генерации, переформулируйте запрос",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -7840,
+        1840
+      ],
+      "id": "a415ea0d-2ca8-4e94-8cae-5c4f0b072345",
+      "name": "Ошибка1",
+      "webhookId": "dd0a7e5b-abbe-4ed7-9d1e-80efa5f7ee0c"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json.output || '';\n\n// Ищем границы кода\nconst codeStartTag = '===CODE_START===';\nconst codeEndTag = '===CODE_END===';\n\nconst startIdx = output.indexOf(codeStartTag);\nconst endIdx = output.indexOf(codeEndTag);\n\nlet code = '';\nlet filename = 'output.txt';\nlet language = '';\nlet explanation = '';\n\nif (startIdx !== -1 && endIdx !== -1) {\n  // Вырезаем блок между маркерами\n  const codeBlock = output.substring(startIdx + codeStartTag.length, endIdx).trim();\n  \n  // Первая строка — заголовок [language: python | file: main.py]\n  const lines = codeBlock.split('\\n');\n  const headerLine = lines[0] || '';\n  \n  // Парсим заголовок\n  const langMatch = headerLine.match(/language:\\s*(\\w+)/);\n  const fileMatch = headerLine.match(/file:\\s*([^\\]]+)/);\n  \n  if (langMatch) language = langMatch[1].trim();\n  if (fileMatch) filename = fileMatch[1].trim();\n  \n  // Если имя файла не указано — генерируем из языка\n  if (!fileMatch && language) {\n    const extensions = { python: '.py', html: '.html', javascript: '.js', css: '.css' };\n    filename = 'code' + (extensions[language] || '.txt');\n  }\n  \n  // Код — всё после заголовка\n  code = lines.slice(1).join('\\n').trim();\n  \n  // Пояснения — всё что ВНЕ блока CODE_START...CODE_END\n  const before = output.substring(0, startIdx).trim();\n  const after = output.substring(endIdx + codeEndTag.length).trim();\n  explanation = (before + '\\n\\n' + after).trim();\n  \n} else {\n  // Маркеры не найдены — всё считаем пояснением\n  explanation = output;\n}\n\nreturn [{\n  json: {\n    code,\n    filename,\n    language,\n    explanation\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7760,
+        1424
+      ],
+      "id": "ac793017-b67b-4080-bf86-b59fc83abc3d",
+      "name": "парсинг кода1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.data3}}\n{{ $json.textreview }}",
+        "options": {
+          "systemMessage": "Role\nYou are a senior QA engineer and static code reviewer. You have deep expertise in software development, code quality, security, and testing. You do NOT execute code — you perform static analysis only: reading, reasoning about, and evaluating code by inspection.\nAll your communication is in Russian. Regardless of the language of the code, comments, or documentation you receive, every response you produce must be written in Russian.\n\nYour Task\nYou receive three inputs:\n\nTechnical specification (ТЗ) — the original requirements describing what the code is supposed to do.\nSource code — one or more files with the implementation.\nDeveloper notes — optional explanations from the developer about their approach, decisions, or known limitations.\n\nYour job is to perform a thorough static review of the code against the specification and report your findings.\n\nReview Process\nWork through the following checklist in order. For each area, carefully inspect the code and note any issues you find.\n1. Specification Compliance\n\nCompare every requirement in the ТЗ against the code. Check whether each stated feature, behavior, endpoint, field, rule, or constraint is actually implemented.\nFlag any requirement that is missing, partially implemented, or implemented differently than specified.\nFlag any functionality present in the code that is NOT described in the ТЗ (unexpected additions), as this may indicate scope creep or misunderstanding.\n\n2. Logic and Correctness\n\nTrace the core logic paths mentally. Look for:\n\nOff-by-one errors in loops, slicing, and indexing.\nIncorrect boolean conditions (wrong operator, inverted logic, missing parentheses).\nWrong order of operations or precedence issues.\nVariables that are declared but never used, or used before being assigned.\nFunctions that never return a value when they should, or return the wrong type.\nMutation of shared state where it should not be mutated.\nInfinite loops or recursion without a proper base case.\nRace conditions in asynchronous code (if applicable).\n\n\n\n3. Edge Cases and Robustness\n\nConsider what happens with:\n\nEmpty input (empty string, empty array, empty object, null, undefined, None, 0, false).\nExtremely large input (very long strings, huge arrays, deep nesting).\nUnexpected types (string instead of number, object instead of array).\nBoundary values (first element, last element, exactly at the limit).\nDuplicate values, negative numbers, special characters, Unicode.\nConcurrent or repeated calls (if relevant).\n\n\nCheck whether errors and exceptions are handled properly — are there try/catch blocks, input validation, or graceful degradation where needed?\n\n4. Security\n\nLook for common vulnerabilities relevant to the code's context:\n\nInjection risks (SQL injection, XSS, command injection, path traversal).\nImproper input validation or sanitization.\nHardcoded secrets, tokens, passwords, or API keys.\nInsecure data exposure (logging sensitive data, returning too much info in errors).\nMissing authentication or authorization checks (if the ТЗ implies they should exist).\nUnsafe deserialization or eval-like constructs.\n\n\nIf the code does not deal with security-sensitive operations, simply state that no security issues are applicable.\n\n5. Code Quality and Style\n\nEvaluate readability: meaningful variable/function names, consistent formatting, reasonable function length.\nCheck for code duplication — repeated blocks that should be extracted into a function.\nLook for dead code (unreachable branches, commented-out code left in, unused imports).\nAssess whether the code structure is reasonable — proper separation of concerns, not overly coupled.\nCheck naming conventions consistency (camelCase vs snake_case mixing, etc.).\n\n6. Performance (if relevant)\n\nFlag obviously inefficient patterns only:\n\nNested loops over large collections where a hash map would work.\nRepeated database queries inside loops (N+1 problem).\nUnnecessary re-computation that could be cached.\nLoading entire datasets into memory when streaming or pagination is appropriate.\n\n\nDo NOT nitpick micro-optimizations. Only flag issues that could realistically cause problems.\n\n\nOutput Format\nRespond in Russian as free-form text. Structure your response as follows:\nIf the code passes review with no issues:\nWrite a clear confirmation that the code has been reviewed and no issues were found. Briefly mention which areas were checked so it is evident the review was thorough, not superficial. Example tone: \"Код проверен по всем направлениям: соответствие ТЗ, логика, edge cases, безопасность, стиль. Замечаний нет.\"\nIf issues are found:\nFor each issue, provide:\n\nWhat is wrong — describe the problem clearly and specifically.\nWhere exactly — reference the file name (if multiple files), the function/method name, and the approximate location in the code (line number or code snippet quote).\nWhy it matters — explain the consequence: what could break, what behavior would be incorrect, what risk it creates.\nHow to fix — give a concrete, actionable recommendation. Do not just say \"fix this\" — explain or show what the corrected version should look like.\n\nGroup issues by severity if there are many:\n\nКритичные — the code will not work correctly, data may be lost, security vulnerability.\nВажные — the code works but has significant quality, logic, or robustness problems.\nМелкие — style issues, minor improvements, non-critical suggestions.\n\nIf there are issues in some areas but not others, explicitly state which areas passed review so the developer knows the full picture.\n\nRules\n\nYou perform static analysis ONLY. Do not claim you ran the code, executed tests, or observed runtime behavior. All your conclusions are based on reading and reasoning.\nBe precise. Do not make vague claims like \"this might not work.\" Either explain the specific failure scenario or do not mention it.\nDo not invent issues. If the code is good, say so. Artificial fault-finding erodes trust.\nDo not rewrite the entire code. Your job is to review and provide targeted feedback, not to refactor the project.\nIf the developer notes explain a deliberate decision that seems unusual, acknowledge it rather than flagging it as a mistake — but still note if it contradicts the ТЗ.\nIf the ТЗ is ambiguous or incomplete and you cannot determine whether the code is correct, state what is unclear and what assumption you are making.\nDo not evaluate technologies or frameworks chosen — that decision is already made. Focus on how well the chosen approach is implemented.\nKeep your response practical and respectful. You are a colleague helping improve the code, not a judge.\n\n\nFormatting\nDo not use markdown formatting in your responses. No headers (#), no bold (**), no italic (*), no bullet points (- or *), no numbered lists, no horizontal rules, no code fences (```). Write in plain continuous text only — normal paragraphs separated by blank lines. When you need to list several issues, describe them one after another in separate paragraphs, numbering them inline if needed (e.g., \"1) ...\", \"2) ...\") rather than using markdown list syntax. When you need to reference a piece of code, quote it inline within regular text rather than placing it in a fenced code block. Your response should read as a natural, flowing message — not as a formatted document.\n\nEdge Cases in Your Own Work\n\nIf no ТЗ is provided: Review the code on its own merits (logic, edge cases, security, style). Note that you cannot assess specification compliance without a ТЗ.\nIf no code is provided: Ask for the code. Do not try to guess or generate it.\nIf the code is in a language you do not recognize: State this honestly and review what you can (logic, structure) while noting that language-specific issues may be missed.\nIf the developer notes contradict the ТЗ: Flag the contradiction explicitly. Do not silently side with either.\nIf the code is extremely large: Prioritize specification compliance and critical logic/security issues. Note that a full style review may require a follow-up pass.\n\nВажно\nТебе нужно предоставить список правок, которые необходимо сделать согласно ТЗ"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -6512,
+        1296
+      ],
+      "id": "dd2ebee0-9c61-4624-aa05-966056081d9b",
+      "name": "REVIEWER",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.result.document.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -7184,
+        1360
+      ],
+      "id": "6252b980-d7f1-4c7f-9ef5-b61aaa8ac121",
+      "name": "Качаем код",
+      "webhookId": "29b5e13e-1074-4739-8bb4-9db0080c365d"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "data1",
+        "destinationKey": "data1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -5760,
+        1408
+      ],
+      "id": "8806369d-14c1-4ddc-ae81-6e311243be6a",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Ошибка генерации, переформулируйте запрос",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -6080,
+        1584
+      ],
+      "id": "4c1b1a14-76f1-48eb-aa51-9d0e49742310",
+      "name": "Ошибка2",
+      "webhookId": "dd0a7e5b-abbe-4ed7-9d1e-80efa5f7ee0c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9d332d5d-45b0-4b05-a177-ba585c53a519",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -6192,
+        1408
+      ],
+      "id": "8086020b-c89f-4080-98d7-2e6c78559fee",
+      "name": "Пустота ответа2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "mode": "list",
+          "cachedResultName": "google/gemini-2.5-flash-lite-preview-09-2025"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -6576,
+        1424
+      ],
+      "id": "7f7ceca3-1087-4f8c-84e8-bd692a570f8b",
+      "name": "OpenAI Chat Model2"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "-5282485442",
+        "binaryData": true,
+        "binaryPropertyName": "data2",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -7376,
+        1424
+      ],
+      "id": "e47d623f-0421-4fe7-8d11-9133e3030141",
+      "name": "отправили код2",
+      "webhookId": "cb32b1cd-66fe-497b-907d-d240a07470c9"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -6704,
+        1184
+      ],
+      "id": "7986d7fd-a709-4c9f-8c18-48294713f1cb",
+      "name": "собираем код2+ТЗ"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output",
+        "binaryPropertyName": "data1",
+        "options": {
+          "fileName": "ревью2.txt"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -5920,
+        1408
+      ],
+      "id": "840aebd3-b6e6-45ba-af69-876bbcfe8678",
+      "name": "Собираем в файл ответ2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json.output || '';\n\n// Ищем границы кода\nconst codeStartTag = '===CODE_START===';\nconst codeEndTag = '===CODE_END===';\n\nconst startIdx = output.indexOf(codeStartTag);\nconst endIdx = output.indexOf(codeEndTag);\n\nlet code = '';\nlet filename = 'output.txt';\nlet language = '';\nlet explanation = '';\n\nif (startIdx !== -1 && endIdx !== -1) {\n  // Вырезаем блок между маркерами\n  const codeBlock = output.substring(startIdx + codeStartTag.length, endIdx).trim();\n  \n  // Первая строка — заголовок [language: python | file: main.py]\n  const lines = codeBlock.split('\\n');\n  const headerLine = lines[0] || '';\n  \n  // Парсим заголовок\n  const langMatch = headerLine.match(/language:\\s*(\\w+)/);\n  const fileMatch = headerLine.match(/file:\\s*([^\\]]+)/);\n  \n  if (langMatch) language = langMatch[1].trim();\n  if (fileMatch) filename = fileMatch[1].trim();\n  \n  // Если имя файла не указано — генерируем из языка\n  if (!fileMatch && language) {\n    const extensions = { python: '.py', html: '.html', javascript: '.js', css: '.css' };\n    filename = 'code' + (extensions[language] || '.txt');\n  }\n  \n  // Код — всё после заголовка\n  code = lines.slice(1).join('\\n').trim();\n  \n  // Пояснения — всё что ВНЕ блока CODE_START...CODE_END\n  const before = output.substring(0, startIdx).trim();\n  const after = output.substring(endIdx + codeEndTag.length).trim();\n  explanation = (before + '\\n\\n' + after).trim();\n  \n} else {\n  // Маркеры не найдены — всё считаем пояснением\n  explanation = output;\n}\n\nreturn [{\n  json: {\n    code,\n    filename,\n    language,\n    explanation\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -10240,
+        1760
+      ],
+      "id": "b4e354c8-4342-407d-ac67-0ea9c60aa689",
+      "name": "парсинг кода2"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "code",
+        "options": {
+          "fileName": "={{ $json.filename }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -10064,
+        1760
+      ],
+      "id": "a51bff71-1e7f-4b6c-98d6-75031c65f168",
+      "name": "делаем файл код1"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "-5282485442",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -9888,
+        1760
+      ],
+      "id": "4be81121-b336-4868-8e45-fffb2bc070a2",
+      "name": "Отправка код1",
+      "webhookId": "180c50d4-b767-4031-bdea-38b80019a4e8"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "732361e5-91bf-4181-9e00-c3fae68122ef",
+              "name": "result",
+              "value": "={{ $json.result.document.file_id }}",
+              "type": "string"
+            },
+            {
+              "id": "6d610244-eef3-4857-b3bf-23646d28235f",
+              "name": "textreview",
+              "value": "={{ $('Получить данные от MAIN').item.json.textreview }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -9728,
+        1760
+      ],
+      "id": "5b628201-8ba8-46a7-b427-44c1c1bc3280",
+      "name": "получаем ID кода1 и ТЗ"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "20fd7b3d-8130-4c72-adf6-e7e5cc656d26",
+              "name": "textreview",
+              "value": "={{ $json.textreview }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -9552,
+        1632
+      ],
+      "id": "19d82a91-052d-4271-9e41-dd7bf2d1c827",
+      "name": "Только ТЗ"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "YOUR_REVIEWER_WORKFLOW_ID",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/YOUR_REVIEWER_WORKFLOW_ID",
+          "cachedResultName": "REVIEWER"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -9552,
+        1888
+      ],
+      "id": "ba201fd2-c112-428b-8d18-486a8aa68463",
+      "name": "Идем к тестировщику"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "766bc342-9c6b-4b32-8c54-f6b57eac949f",
+              "name": "=textnew",
+              "value": "={{ $json.data1 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -9360,
+        1904
+      ],
+      "id": "80eaf69b-8887-4470-b9df-d3c81c2081c5",
+      "name": "Правки от тестировщика"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "destinationKey": "code1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -9920,
+        1472
+      ],
+      "id": "97d62036-400e-46b4-9dce-ba6dd9ac5cc8",
+      "name": "код1 текст"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -9328,
+        1552
+      ],
+      "id": "62d38a89-2235-41f4-9724-39597123d0ce",
+      "name": "код1+правки+ТЗ"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "code",
+        "binaryPropertyName": "data2",
+        "options": {
+          "fileName": "={{ $json.filename }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -7584,
+        1424
+      ],
+      "id": "f95df567-0042-44b4-b00c-562fe355164d",
+      "name": "делаем код2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.data3}}\n{{ $json.textnew }}\n{{$json.textreview}}",
+        "options": {
+          "systemMessage": "<role>\nТы — старший инженер по качеству (QA Lead). Твоя единственная задача — определить, можно ли отдать код заказчику прямо сейчас или его нужно вернуть разработчику на доработку.\n</role>\n<task>\nНа вход ты получаешь три блока:\n1. Техническое задание (ТЗ)\n2. Код (Python и/или HTML)\n3. Замечания тестировщика — текстовый отчёт о найденных расхождениях кода с ТЗ\nТы анализируешь замечания тестировщика в контексте ТЗ и кода, затем выносишь ровно один вердикт.\n</task>\n<input_format>\n<specification>\n{текст технического задания}\n</specification>\n<code>\n{исходный код: Python, HTML или оба}\n</code>\n<tester_report>\n{замечания тестировщика}\n</tester_report>\n</input_format>\n<output_format>\nОтвет — строго один тег, без пояснений, без дополнительного текста:\n/critical — если есть хотя бы одна критическая ошибка. Код уходит разработчику.\n/ok — если критических ошибок нет. Код можно отдать заказчику.\n</output_format>\n<classification_rules>\nКритическая ошибка (/critical) — любое из:\n\nНевыполнение ключевого требования ТЗ: заявленная функциональность отсутствует, работает неправильно или делает не то, что описано в ТЗ\nПотеря или повреждение данных: код может удалить, перезаписать или исказить пользовательские данные\nОшибки безопасности: SQL-инъекции, XSS, открытые секреты, отсутствие авторизации там, где она требуется по ТЗ\nНеработоспособность: код падает с ошибкой при штатном сценарии использования (не на заведомо невалидном вводе)\nСломанная бизнес-логика: расчёты, условия, переходы состояний противоречат ТЗ\n\nНЕ критическая ошибка (/ok) — всё, что не мешает заказчику принять раб��ту:\n\nКосметика: опечатки в комментариях, неидеальное форматирование, стилистика кода\nНесоблюдение code style без влияния на работу (именование переменных, отступы)\nМелкие UI-недочёты, не оговорённые в ТЗ (отступы в пикселях, оттенки цветов)\nОтсутствие оптимизаций, которые не требовались в ТЗ\nПредложения по улучшению, выходящие за рамки ТЗ\n\n</classification_rules>\n<decision_logic>\nСледуй этому алгоритму строго по шагам:\n\nПрочитай ТЗ. Зафиксируй ключевые требования.\nПрочитай замечания тестировщика.\nДля каждого замечания задай вопрос: «Это замечание указывает на нарушение конкретного требования ТЗ или на сбой в работоспособности кода?»\n\nДа → это критическая ошибка.\nНет → это некритическое замечание.\n\n\nЕсли хотя бы одно замечание критическое → /critical\nЕсли ни одно замечание не критическое → /ok\n</decision_logic>\n\n<edge_cases>\n\nЕсли замечания тестировщика пустые или отсутствуют → /ok\nЕсли тестировщик описывает проблему расплывчато и невозможно определить, нарушено ли ТЗ → трактуй в пользу /critical (лучше перепроверить, чем пропустить)\nЕсли тестировщик отмечает проблему, которая НЕ упоминается в ТЗ и не связана с безопасностью/работоспособностью → /ok\nЕсли тестировщик явно пишет, что функциональность работает, но «можно сделать лучше» → /ok\n</edge_cases>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -5184,
+        1200
+      ],
+      "id": "befd7dcd-7d12-4aca-a192-1617bb697f41",
+      "name": "Проверяет на критические ошибки1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -5248,
+        1392
+      ],
+      "id": "aa6a5a29-75a1-4972-9c30-d2d3bf039fa3",
+      "name": "OpenAI Chat Model3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "766bc342-9c6b-4b32-8c54-f6b57eac949f",
+              "name": "=textnew",
+              "value": "={{ $json.data1 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5568,
+        1408
+      ],
+      "id": "9acc7c72-a959-45f2-a2e0-fe813b41a655",
+      "name": "Правки от тестировщика2"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -5376,
+        1088
+      ],
+      "id": "728b3033-c538-46e2-a8bf-e00062d591df",
+      "name": "код2+правки2+ТЗ"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -8496,
+        1440
+      ],
+      "id": "875eeb93-93e2-47a1-ac28-119bdfd27cd9",
+      "name": "правки+код1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -4544,
+        976
+      ],
+      "id": "e0f2bc52-605c-4b8d-99cd-0da2387b82f4",
+      "name": "правки2+код2"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "destinationKey": "data3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -6960,
+        1280
+      ],
+      "id": "95a58f2a-ac10-44b7-b48c-db0f063edbff",
+      "name": "код2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "/critical",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "848058af-9461-4a4b-b2a7-aa2af82f9705"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ab990fbf-7eb9-4ffd-b652-38afbc718e7b",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "/ok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a508ccd1-249e-488f-8db3-abc7babcdc90",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "error",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -8784,
+        1664
+      ],
+      "id": "3b9dfc09-3b7e-4338-85e5-9315b29e2bd8",
+      "name": "критично или нет"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "/critical",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "848058af-9461-4a4b-b2a7-aa2af82f9705"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ab990fbf-7eb9-4ffd-b652-38afbc718e7b",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "/ok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ca1e60d7-fb3d-4e70-99be-22b1672fb585",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "error",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -4832,
+        1200
+      ],
+      "id": "597c7b5e-46db-455e-a437-881d41bcace0",
+      "name": "критично или нет1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9d332d5d-45b0-4b05-a177-ba585c53a519",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3904,
+        1040
+      ],
+      "id": "5bcce32f-38a9-413c-9b6c-98cb6359fe1c",
+      "name": "Пустота ответа3"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Ошибка генерации, переформулируйте запрос",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -3808,
+        1408
+      ],
+      "id": "2c91f447-a518-436d-81f9-d9616c0a6f60",
+      "name": "Ошибка3",
+      "webhookId": "dd0a7e5b-abbe-4ed7-9d1e-80efa5f7ee0c"
+    },
+    {
+      "parameters": {
+        "jsCode": "const output = $input.first().json.output || '';\n\n// Ищем границы кода\nconst codeStartTag = '===CODE_START===';\nconst codeEndTag = '===CODE_END===';\n\nconst startIdx = output.indexOf(codeStartTag);\nconst endIdx = output.indexOf(codeEndTag);\n\nlet code = '';\nlet filename = 'output.txt';\nlet language = '';\nlet explanation = '';\n\nif (startIdx !== -1 && endIdx !== -1) {\n  // Вырезаем блок между маркерами\n  const codeBlock = output.substring(startIdx + codeStartTag.length, endIdx).trim();\n  \n  // Первая строка — заголовок [language: python | file: main.py]\n  const lines = codeBlock.split('\\n');\n  const headerLine = lines[0] || '';\n  \n  // Парсим заголовок\n  const langMatch = headerLine.match(/language:\\s*(\\w+)/);\n  const fileMatch = headerLine.match(/file:\\s*([^\\]]+)/);\n  \n  if (langMatch) language = langMatch[1].trim();\n  if (fileMatch) filename = fileMatch[1].trim();\n  \n  // Если имя файла не указано — генерируем из языка\n  if (!fileMatch && language) {\n    const extensions = { python: '.py', html: '.html', javascript: '.js', css: '.css' };\n    filename = 'code' + (extensions[language] || '.txt');\n  }\n  \n  // Код — всё после заголовка\n  code = lines.slice(1).join('\\n').trim();\n  \n  // Пояснения — всё что ВНЕ блока CODE_START...CODE_END\n  const before = output.substring(0, startIdx).trim();\n  const after = output.substring(endIdx + codeEndTag.length).trim();\n  explanation = (before + '\\n\\n' + after).trim();\n  \n} else {\n  // Маркеры не найдены — всё считаем пояснением\n  explanation = output;\n}\n\nreturn [{\n  json: {\n    code,\n    filename,\n    language,\n    explanation\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3728,
+        992
+      ],
+      "id": "765f702b-2e10-41e2-b6d9-76b33a3fa9b6",
+      "name": "парсинг кода"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.data3}}\n{{ $json.textreview }}",
+        "options": {
+          "systemMessage": "Role\nYou are a senior QA engineer and static code reviewer. You have deep expertise in software development, code quality, security, and testing. You do NOT execute code — you perform static analysis only: reading, reasoning about, and evaluating code by inspection.\nAll your communication is in Russian. Regardless of the language of the code, comments, or documentation you receive, every response you produce must be written in Russian.\n\nYour Task\nYou receive three inputs:\n\nTechnical specification (ТЗ) — the original requirements describing what the code is supposed to do.\nSource code — one or more files with the implementation.\nDeveloper notes — optional explanations from the developer about their approach, decisions, or known limitations.\n\nYour job is to perform a thorough static review of the code against the specification and report your findings.\n\nReview Process\nWork through the following checklist in order. For each area, carefully inspect the code and note any issues you find.\n1. Specification Compliance\n\nCompare every requirement in the ТЗ against the code. Check whether each stated feature, behavior, endpoint, field, rule, or constraint is actually implemented.\nFlag any requirement that is missing, partially implemented, or implemented differently than specified.\nFlag any functionality present in the code that is NOT described in the ТЗ (unexpected additions), as this may indicate scope creep or misunderstanding.\n\n2. Logic and Correctness\n\nTrace the core logic paths mentally. Look for:\n\nOff-by-one errors in loops, slicing, and indexing.\nIncorrect boolean conditions (wrong operator, inverted logic, missing parentheses).\nWrong order of operations or precedence issues.\nVariables that are declared but never used, or used before being assigned.\nFunctions that never return a value when they should, or return the wrong type.\nMutation of shared state where it should not be mutated.\nInfinite loops or recursion without a proper base case.\nRace conditions in asynchronous code (if applicable).\n\n\n\n3. Edge Cases and Robustness\n\nConsider what happens with:\n\nEmpty input (empty string, empty array, empty object, null, undefined, None, 0, false).\nExtremely large input (very long strings, huge arrays, deep nesting).\nUnexpected types (string instead of number, object instead of array).\nBoundary values (first element, last element, exactly at the limit).\nDuplicate values, negative numbers, special characters, Unicode.\nConcurrent or repeated calls (if relevant).\n\n\nCheck whether errors and exceptions are handled properly — are there try/catch blocks, input validation, or graceful degradation where needed?\n\n4. Security\n\nLook for common vulnerabilities relevant to the code's context:\n\nInjection risks (SQL injection, XSS, command injection, path traversal).\nImproper input validation or sanitization.\nHardcoded secrets, tokens, passwords, or API keys.\nInsecure data exposure (logging sensitive data, returning too much info in errors).\nMissing authentication or authorization checks (if the ТЗ implies they should exist).\nUnsafe deserialization or eval-like constructs.\n\n\nIf the code does not deal with security-sensitive operations, simply state that no security issues are applicable.\n\n5. Code Quality and Style\n\nEvaluate readability: meaningful variable/function names, consistent formatting, reasonable function length.\nCheck for code duplication — repeated blocks that should be extracted into a function.\nLook for dead code (unreachable branches, commented-out code left in, unused imports).\nAssess whether the code structure is reasonable — proper separation of concerns, not overly coupled.\nCheck naming conventions consistency (camelCase vs snake_case mixing, etc.).\n\n6. Performance (if relevant)\n\nFlag obviously inefficient patterns only:\n\nNested loops over large collections where a hash map would work.\nRepeated database queries inside loops (N+1 problem).\nUnnecessary re-computation that could be cached.\nLoading entire datasets into memory when streaming or pagination is appropriate.\n\n\nDo NOT nitpick micro-optimizations. Only flag issues that could realistically cause problems.\n\n\nOutput Format\nRespond in Russian as free-form text. Structure your response as follows:\nIf the code passes review with no issues:\nWrite a clear confirmation that the code has been reviewed and no issues were found. Briefly mention which areas were checked so it is evident the review was thorough, not superficial. Example tone: \"Код проверен по всем направлениям: соответствие ТЗ, логика, edge cases, безопасность, стиль. Замечаний нет.\"\nIf issues are found:\nFor each issue, provide:\n\nWhat is wrong — describe the problem clearly and specifically.\nWhere exactly — reference the file name (if multiple files), the function/method name, and the approximate location in the code (line number or code snippet quote).\nWhy it matters — explain the consequence: what could break, what behavior would be incorrect, what risk it creates.\nHow to fix — give a concrete, actionable recommendation. Do not just say \"fix this\" — explain or show what the corrected version should look like.\n\nGroup issues by severity if there are many:\n\nКритичные — the code will not work correctly, data may be lost, security vulnerability.\nВажные — the code works but has significant quality, logic, or robustness problems.\nМелкие — style issues, minor improvements, non-critical suggestions.\n\nIf there are issues in some areas but not others, explicitly state which areas passed review so the developer knows the full picture.\n\nRules\n\nYou perform static analysis ONLY. Do not claim you ran the code, executed tests, or observed runtime behavior. All your conclusions are based on reading and reasoning.\nBe precise. Do not make vague claims like \"this might not work.\" Either explain the specific failure scenario or do not mention it.\nDo not invent issues. If the code is good, say so. Artificial fault-finding erodes trust.\nDo not rewrite the entire code. Your job is to review and provide targeted feedback, not to refactor the project.\nIf the developer notes explain a deliberate decision that seems unusual, acknowledge it rather than flagging it as a mistake — but still note if it contradicts the ТЗ.\nIf the ТЗ is ambiguous or incomplete and you cannot determine whether the code is correct, state what is unclear and what assumption you are making.\nDo not evaluate technologies or frameworks chosen — that decision is already made. Focus on how well the chosen approach is implemented.\nKeep your response practical and respectful. You are a colleague helping improve the code, not a judge.\n\n\nFormatting\nDo not use markdown formatting in your responses. No headers (#), no bold (**), no italic (*), no bullet points (- or *), no numbered lists, no horizontal rules, no code fences (```). Write in plain continuous text only — normal paragraphs separated by blank lines. When you need to list several issues, describe them one after another in separate paragraphs, numbering them inline if needed (e.g., \"1) ...\", \"2) ...\") rather than using markdown list syntax. When you need to reference a piece of code, quote it inline within regular text rather than placing it in a fenced code block. Your response should read as a natural, flowing message — not as a formatted document.\n\nEdge Cases in Your Own Work\n\nIf no ТЗ is provided: Review the code on its own merits (logic, edge cases, security, style). Note that you cannot assess specification compliance without a ТЗ.\nIf no code is provided: Ask for the code. Do not try to guess or generate it.\nIf the code is in a language you do not recognize: State this honestly and review what you can (logic, structure) while noting that language-specific issues may be missed.\nIf the developer notes contradict the ТЗ: Flag the contradiction explicitly. Do not silently side with either.\nIf the code is extremely large: Prioritize specification compliance and critical logic/security issues. Note that a full style review may require a follow-up pass.\n\nВажно\nТебе нужно предоставить список правок, которые необходимо сделать согласно ТЗ"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -2128,
+        832
+      ],
+      "id": "cbf493f7-f040-43ca-8533-3644dbce7532",
+      "name": "REVIEWER1",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "data1",
+        "destinationKey": "data1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1392,
+        1024
+      ],
+      "id": "229cf875-76ad-4afa-a651-7ebc54c64992",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Ошибка генерации, переформулируйте запрос",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1648,
+        1216
+      ],
+      "id": "f465395b-58b7-40bc-83b7-331317a6e3a8",
+      "name": "Ошибка4",
+      "webhookId": "dd0a7e5b-abbe-4ed7-9d1e-80efa5f7ee0c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9d332d5d-45b0-4b05-a177-ba585c53a519",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1792,
+        976
+      ],
+      "id": "8495fa32-c990-48da-9554-33ed5db2ced9",
+      "name": "Пустота ответа4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -2176,
+        992
+      ],
+      "id": "46e5ec20-ae3e-47ed-99ad-c4b2ab742102",
+      "name": "OpenAI Chat Model4"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "code",
+        "binaryPropertyName": "data2",
+        "options": {
+          "fileName": "=3{{ $json.filename }}"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -3520,
+        1008
+      ],
+      "id": "0d6cd777-5714-48b2-a07c-aac8821299a4",
+      "name": "делаем код3"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "-5282485442",
+        "binaryData": true,
+        "binaryPropertyName": "data2",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2976,
+        992
+      ],
+      "id": "eeb572d5-204d-4137-a6a9-3f65632f1014",
+      "name": "отправили код3",
+      "webhookId": "cb32b1cd-66fe-497b-907d-d240a07470c9"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.result.document.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -2784,
+        928
+      ],
+      "id": "fe95991d-c563-41c7-8b2b-5475ab8d3e53",
+      "name": "Качаем код3",
+      "webhookId": "29b5e13e-1074-4739-8bb4-9db0080c365d"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "destinationKey": "data3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -2560,
+        848
+      ],
+      "id": "a0d4059b-29d3-46f3-9d22-d81533f0c1c2",
+      "name": "код3"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2304,
+        752
+      ],
+      "id": "5b154c4f-706f-4776-a302-c54647d922fb",
+      "name": "собираем код3+ТЗ"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.data3}}\n{{ $json.textnew }}\n{{$json.textreview}}",
+        "options": {
+          "systemMessage": "<role>\nТы — старший инженер по качеству (QA Lead). Твоя единственная задача — определить, можно ли отдать код заказчику прямо сейчас или его нужно вернуть разработчику на доработку.\n</role>\n<task>\nНа вход ты получаешь три блока:\n1. Техническое задание (ТЗ)\n2. Код (Python и/или HTML)\n3. Замечания тестировщика — текстовый отчёт о найденных расхождениях кода с ТЗ\nТы анализируешь замечания тестировщика в контексте ТЗ и кода, затем выносишь ровно один вердикт.\n</task>\n<input_format>\n<specification>\n{текст технического задания}\n</specification>\n<code>\n{исходный код: Python, HTML или оба}\n</code>\n<tester_report>\n{замечания тестировщика}\n</tester_report>\n</input_format>\n<output_format>\nОтвет — строго один тег, без пояснений, без дополнительного текста:\n/critical — если есть хотя бы одна критическая ошибка. Код уходит разработчику.\n/ok — если критических ошибок нет. Код можно отдать заказчику.\n</output_format>\n<classification_rules>\nКритическая ошибка (/critical) — любое из:\n\nНевыполнение ключевого требования ТЗ: заявленная функциональность отсутствует, работает неправильно или делает не то, что описано в ТЗ\nПотеря или повреждение данных: код может удалить, перезаписать или исказить пользовательские данные\nОшибки безопасности: SQL-инъекции, XSS, открытые секреты, отсутствие авторизации там, где она требуется по ТЗ\nНеработоспособность: код падает с ошибкой при штатном сценарии использования (не на заведомо невалидном вводе)\nСломанная бизнес-логика: расчёты, условия, переходы состояний противоречат ТЗ\n\nНЕ критическая ошибка (/ok) — всё, что не мешает заказчику принять работу:\n\nКосметика: опечатки в комментариях, неидеальное форматирование, стилистика кода\nНесоблюдение code style без влияния на работу (именование переменных, отступы)\nМелкие UI-недочёты, не оговорённые в ТЗ (отступы в пикселях, оттенки цветов)\nОтсутствие оптимизаций, которые не требовались в ТЗ\nПредложения по улучшению, выходящие за рамки ТЗ\n\n</classification_rules>\n<decision_logic>\nСледуй этому алгоритму строго по шагам:\n\nПрочитай ТЗ. Зафиксируй ключевые требования.\nПрочитай замечания тестировщика.\nДля каждого замечания задай вопрос: «Это замечание указывает на нарушение конкретного требования ТЗ или на сбой в работоспособности кода?»\n\nДа → это критическая ошибка.\nНет → это некритическое замечание.\n\n\nЕсли хотя бы одно замечание критическое → /critical\nЕсли ни одно замечание не критическое → /ok\n</decision_logic>\n\n<edge_cases>\n\nЕсли замечания тестировщика пустые или отсутствуют → /ok\nЕсли тестировщик описывает проблему расплывчато и невозможно определить, нарушено ли ТЗ → трактуй в пользу /critical (лучше перепроверить, чем пропустить)\nЕсли тестировщик отмечает проблему, которая НЕ упоминается в ТЗ и не связана с безопасностью/работоспособностью → /ok\nЕсли тестировщик явно пишет, что функциональность работает, но «можно сделать лучше» → /ok\n</edge_cases>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -816,
+        864
+      ],
+      "id": "6c5eddba-83ee-4e0e-983e-b000fa967c44",
+      "name": "Проверяет на критические ошибки2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -880,
+        1056
+      ],
+      "id": "ef69818a-1e27-4b64-884a-ed44b431ea0a",
+      "name": "OpenAI Chat Model5"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "766bc342-9c6b-4b32-8c54-f6b57eac949f",
+              "name": "=textnew",
+              "value": "={{ $json.data1 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1232,
+        1024
+      ],
+      "id": "0825d1ce-7e30-4740-8886-b14354b3946f",
+      "name": "Правки от тестировщика3"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "/critical",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "848058af-9461-4a4b-b2a7-aa2af82f9705"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ab990fbf-7eb9-4ffd-b652-38afbc718e7b",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "/ok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5ddb2d7a-9e2a-407c-b561-2fa57c4f9ce7",
+                    "leftValue": "={{ $json.output }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -480,
+        928
+      ],
+      "id": "bf5b4942-fce7-41ae-9679-6689987545c4",
+      "name": "критично или нет2"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1008,
+        752
+      ],
+      "id": "066428e8-2788-42d1-b249-473fb05280a4",
+      "name": "код3+правки3+ТЗ"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "anthropic/claude-haiku-4.5",
+          "mode": "list",
+          "cachedResultName": "anthropic/claude-haiku-4.5"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -4176,
+        1200
+      ],
+      "id": "5c446c98-af39-4064-aed1-5b522a0a4df6",
+      "name": "COD"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.data3}}\n{{ $json.textnew }}",
+        "options": {
+          "systemMessage": "<role>\nТы — аккуратный разработчик-исполнитель. Твоя задача — точечно внести правки в существующий код, не трогая ничего лишнего. Ты работаешь как хирург: минимальное вмешательство, максимальная точность.\n</role>\n<task>\nНа вход ты получаешь два блока:\n1. Исходный код (Python или HTML) — один файл.\n2. Список правок — текстовое описание того, что нужно исправить.\nТы вносишь ТОЛЬКО запрошенные правки. Затем возвращаешь исправленный код и краткую инструкцию по запуску.\n</task>\n<input_format>\n<code>\n{исходный код}\n</code>\n<fixes>\n{список правок от тестировщика или ревьюера}\n</fixes>\n</input_format>\n<output_format>\nОтвет состоит из двух частей, строго в таком порядке:\nЧасть 1 — Исправленный код:\n===CODE_START===\n[language: python | file: путь/к/файлу.py]\nисправленный код\n===CODE_END===\nили\n===CODE_START===\n[language: html | file: путь/к/файлу.html]\nисправленный код\n===CODE_END===\nЕсли из правок следует, что код нужно разнести на несколько файлов — каждый файл оборачивай отдельной парой ===CODE_START=== / ===CODE_END=== с соответствующим заголовком.\nЧасть 2 — Инструкция по запуску:\nБлок «## Запуск» — 2–5 строк: какие команды выполнить, какие зависимости установить, как открыть результат. Только практические шаги, без воды.\n</output_format>\n<rules>\nЧто ты ДЕЛАЕШЬ:\n\nВносишь ровно те изменения, которые описаны в правках\nСохраняешь оригинальное имя файла из заголовка входного кода; если имя не указано — выбираешь разумное имя (main.py, index.html)\nСохраняешь стиль кодирования оригинала: отступы, кавычки, именование, комментарии\nЕсли правка требует добавить import или подключить CSS/JS — добавляешь в соответствующее место, не ломая порядок существующих импортов\nЕсли правка неоднозначна — выбираешь минимальное изменение, которое решает описанную проблему\n\nЧего ты НЕ ДЕЛАЕШЬ:\n\nНе рефакторишь код, не переименовываешь переменные, не меняешь форматирование за пределами правок\nНе добавляешь функциональность, которая не запрошена в правках\nНе удаляешь комментарии, логирование или код, не связанный с правками\nНе меняешь структуру файла: порядок функций, классов, блоков HTML остаётся прежним\nНе оптимизируешь код, если это не запрошено явно\nНе добавляешь пояснений внутри кода (# исправлено, <!-- fixed --> и т.п.)\n\n</rules>\n<edge_cases>\n\nЕсли правка противоречит другой правке → выполни ту, что описана последней (приоритет последнего указания).\nЕсли правка невыполнима без изменения структуры (например, «перенеси всю логику в отдельный класс») → выполни максимально локально и в секции «Запуск» одной строкой отметь: «⚠ Правка X потребовала структурного изменения».\nЕсли в правках есть пункт, который уже реализован в коде → не трогай этот участок.\nЕсли в правке указано удалить код → удали только указанный фрагмент, не трогая соседние строки.\nЕсли язык файла не указан явно → определи по содержимому (Python / HTML) и укажи в заголовке.\n</edge_cases>\n\n<examples>\n<example_input>\n<code>\ndef calculate_total(items):\ntotal = 0\nfor item in items:\ntotal += item['price']\nreturn total\nprint(calculate_total([{'price': 10}, {'price': 20}]))\n</code>\n<fixes>\n1. Не учитывается количество товара (поле quantity). Нужно умножать price на quantity.\n2. Если quantity отсутствует, считать его равным 1.\n</fixes>\n</example_input>\n<example_output>\n===CODE_START===\n[language: python | file: main.py]\ndef calculate_total(items):\ntotal = 0\nfor item in items:\ntotal += item['price'] * item.get('quantity', 1)\nreturn total\nprint(calculate_total([{'price': 10}, {'price': 20}]))\n===CODE_END===\nЗапуск\npython main.py\nЗависимостей нет. Python 3.6+.\n</example_output>\n</examples>"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -4208,
+        1024
+      ],
+      "id": "08faf382-ed2c-41da-a403-8aa4e32146f5",
+      "name": "CODER3"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Все пропало, отправляю последнюю версию кода + правки к нему",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        736
+      ],
+      "id": "18af5a51-2729-48a3-9cf5-18a04147a845",
+      "name": "Все пропало",
+      "webhookId": "e1d97cd9-3314-4b8e-bfdb-60e13ef7da87"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "binaryData": true,
+        "binaryPropertyName": "data2",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        528
+      ],
+      "id": "0ae722fd-76c6-4b11-b5dd-b4a74f863a79",
+      "name": "Отправляем код3",
+      "webhookId": "9eb9fe9e-e7ae-4913-bfb6-c950621eb94d"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "binaryData": true,
+        "binaryPropertyName": "data1",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        368,
+        736
+      ],
+      "id": "39806873-2183-4426-a22a-bd3ee8a93527",
+      "name": "Отправляем правки3",
+      "webhookId": "37bc48ed-179a-4549-8859-fb408cef6d5d"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "binaryData": true,
+        "binaryPropertyName": "data2",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        1200
+      ],
+      "id": "564bc8a4-804d-436d-b0d3-0ac7334d4783",
+      "name": "Отправлям код3",
+      "webhookId": "9eb9fe9e-e7ae-4913-bfb6-c950621eb94d"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "binaryData": true,
+        "binaryPropertyName": "explain2",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        1408
+      ],
+      "id": "9b3e53aa-2ce4-4060-9360-dd6b882674d1",
+      "name": "Отправляем инструкцию3",
+      "webhookId": "37bc48ed-179a-4549-8859-fb408cef6d5d"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "explanation",
+        "binaryPropertyName": "explain2",
+        "options": {
+          "fileName": "explanation2.txt"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -3504,
+        1200
+      ],
+      "id": "416de421-37aa-4c1c-b9a9-24cb150b3b6a",
+      "name": "текст код3 инструкция"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -208,
+        576
+      ],
+      "id": "591282f0-9f24-4891-83c8-f227a9aaf7ad",
+      "name": "Собрать код3 + отправка"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        32,
+        848
+      ],
+      "id": "afa86c01-5265-4c17-9751-f66ca6544cb8",
+      "name": "Собрать правки3 + отправка"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -48,
+        1200
+      ],
+      "id": "6092c066-5407-49ba-b3f0-85a67251e449",
+      "name": "Собрать код3 + отправка1"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -128,
+        1392
+      ],
+      "id": "258d8852-567b-4724-8097-2f53c64adf82",
+      "name": "Собрать инструкция + отправка"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output",
+        "binaryPropertyName": "data1",
+        "options": {
+          "fileName": "ревью2.txt"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1584,
+        992
+      ],
+      "id": "f316d5a1-c648-4a77-92f7-0cb1ec95fef9",
+      "name": "правки3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ты получил задачи без правильных тегов. Добавь к каждой задаче соответствующий тег:\n- /coder — для задач по написанию кода\n- /review — для задач по ревью и тестированию\nВот задачи без тегов:\n{{ $('MAIN AGENT').item.json.output }}\nВерни задачи с правильными тегами в формате:\n/coder текст задачи\n/review текст задачи\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -400,
+        1472
+      ],
+      "id": "3d1bf09b-a7d9-4a4d-bdcb-6406f5de43b5",
+      "name": "ПРАВЕР ТЕГОВ",
+      "executeOnce": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Берём retryCount из входа ПРАВЕР ТЕГОВ, а не из его выхода\nconst previousRetry = $('В зависимости от тега передаем').first().json.retryCount || 0;\nconst retryCount = previousRetry + 1;\n\nconst text = ($input.first().json.output || '').replace(/\\\\n/g, '\\n');\n\n// Если больше 3 попыток — ошибка\nif (retryCount > 2) {\n  return [{\n    json: {\n      tag: 'error',\n      content: 'Ошибка: не удалось разметить задачи тегами после 3 попыток. Попробуйте переформулировать задачу.\\n\\nИсходный текст:\\n' + text,\n      retryCount: retryCount\n    }\n  }];\n}\n\nconst parts = text.split(/(?=\\/coder|\\/review)/g).filter(p => p.trim());\n\nconst results = parts\n  .map(part => ({\n    json: {\n      tag: part.match(/^\\/(coder|review)/)?.[1] || 'unknown',\n      content: part.replace(/^\\/(coder|review)\\s*/, '').trim(),\n      retryCount: retryCount\n    }\n  }))\n  .filter(item => item.json.tag !== 'unknown');\n\nif (results.length === 0) {\n  return [{\n    json: {\n      tag: 'unknown',\n      content: text,\n      retryCount: retryCount\n    }\n  }];\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        1760
+      ],
+      "id": "d4391f85-c00d-46b3-bf94-57f191f80349",
+      "name": "Разделение по тегам1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "mode": "list",
+          "cachedResultName": "google/gemini-2.5-flash-lite-preview-09-2025"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -432,
+        1648
+      ],
+      "id": "b197ade1-bdc3-4693-9ee4-2d18eaba83da",
+      "name": "OpenAI Chat Model6"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ты получил задачи без правильных тегов. Добавь к каждой задаче соответствующий тег:\n- /coder — для задач по написанию кода\n- /review — для задач по ревью и тестированию\nВот задачи без тегов:\n{{ $('MAIN AGENT').item.json.output }}\nВерни задачи с правильными тегами в формате:\n/coder текст задачи\n/review текст задачи\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -4592,
+        1440
+      ],
+      "id": "43584875-1e9d-4c86-b9b1-c4c73e81a3f2",
+      "name": "ПРАВЕР ТЕГОВ1",
+      "executeOnce": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "mode": "list",
+          "cachedResultName": "google/gemini-2.5-flash-lite-preview-09-2025"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -4624,
+        1616
+      ],
+      "id": "c67310e6-7800-41dc-93d4-6688e2d9bf72",
+      "name": "OpenAI Chat Model7"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Берём retryCount из входа ПРАВЕР ТЕГОВ, а не из его выхода\nconst previousRetry = $('В зависимости от тега передаем').first().json.retryCount || 0;\nconst retryCount = previousRetry + 1;\n\nconst text = ($input.first().json.output || '').replace(/\\\\n/g, '\\n');\n\n// Если больше 3 попыток — ошибка\nif (retryCount > 2) {\n  return [{\n    json: {\n      tag: 'error',\n      content: 'Ошибка: не удалось разметить задачи тегами после 3 попыток. Попробуйте переформулировать задачу.\\n\\nИсходный текст:\\n' + text,\n      retryCount: retryCount\n    }\n  }];\n}\n\nconst parts = text.split(/(?=\\/coder|\\/review)/g).filter(p => p.trim());\n\nconst results = parts\n  .map(part => ({\n    json: {\n      tag: part.match(/^\\/(coder|review)/)?.[1] || 'unknown',\n      content: part.replace(/^\\/(coder|review)\\s*/, '').trim(),\n      retryCount: retryCount\n    }\n  }))\n  .filter(item => item.json.tag !== 'unknown');\n\nif (results.length === 0) {\n  return [{\n    json: {\n      tag: 'unknown',\n      content: text,\n      retryCount: retryCount\n    }\n  }];\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4288,
+        1680
+      ],
+      "id": "ecdd818a-c3f1-4bc4-81b8-3e7a95154567",
+      "name": "Разделение по тегам"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ты получил задачи без правильных тегов. Добавь к каждой задаче соответствующий тег:\n- /ok — если\n- /review — для задач по ревью и тестированию\nВот задачи без тегов:\n{{ $('Проверяет на критические ошибки').item.json.output }}\nВерни задачи с правильными тегами в формате:\n/coder текст задачи\n/review текст задачи\n",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -8432,
+        1952
+      ],
+      "id": "cd841a83-6e7e-4b84-b5f5-e5cdbdb60f9a",
+      "name": "ПРАВЕР ТЕГОВ2",
+      "executeOnce": false,
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "mode": "list",
+          "cachedResultName": "google/gemini-2.5-flash-lite-preview-09-2025"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -8448,
+        2176
+      ],
+      "id": "6760b3a7-1f83-4725-8070-49f85e3736ff",
+      "name": "OpenAI Chat Model8"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Берём retryCount из входа ПРАВЕР ТЕГОВ, а не из его выхода\nconst previousRetry = $('В зависимости от тега передаем').first().json.retryCount || 0;\nconst retryCount = previousRetry + 1;\n\nconst text = ($input.first().json.output || '').replace(/\\\\n/g, '\\n');\n\n// Если больше 3 попыток — ошибка\nif (retryCount > 2) {\n  return [{\n    json: {\n      tag: 'error',\n      content: 'Ошибка: не удалось разметить задачи тегами после 3 попыток. Попробуйте переформулировать задачу.\\n\\nИсходный текст:\\n' + text,\n      retryCount: retryCount\n    }\n  }];\n}\n\nconst parts = text.split(/(?=\\/coder|\\/review)/g).filter(p => p.trim());\n\nconst results = parts\n  .map(part => ({\n    json: {\n      tag: part.match(/^\\/(coder|review)/)?.[1] || 'unknown',\n      content: part.replace(/^\\/(coder|review)\\s*/, '').trim(),\n      retryCount: retryCount\n    }\n  }))\n  .filter(item => item.json.tag !== 'unknown');\n\nif (results.length === 0) {\n  return [{\n    json: {\n      tag: 'unknown',\n      content: text,\n      retryCount: retryCount\n    }\n  }];\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8080,
+        2416
+      ],
+      "id": "4315406d-e660-4ce0-aa25-d26d07afd29b",
+      "name": "Разделение по тегам2"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.content }} 3крит",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        176,
+        1024
+      ],
+      "id": "47713131-930a-4946-b398-2ed5ed993899",
+      "name": "Ошибка зацикливани3",
+      "webhookId": "c8303d24-2ce6-41b5-b411-f4a1fd5eee29"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.content }} 2крит",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -4400,
+        1264
+      ],
+      "id": "536105f0-f572-406a-8ad2-1144606306d5",
+      "name": "Ошибка зацикливани2",
+      "webhookId": "c8303d24-2ce6-41b5-b411-f4a1fd5eee29"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "={{ $json.content }} 1крит",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -8384,
+        1808
+      ],
+      "id": "6aa6e28e-fc42-4d97-b071-69a1531b6c01",
+      "name": "Ошибка зацикливани1",
+      "webhookId": "c8303d24-2ce6-41b5-b411-f4a1fd5eee29"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Успех, отправляю код и инструкцию",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -8368,
+        2688
+      ],
+      "id": "e77d4230-e748-431c-a387-43b498634ca0",
+      "name": "Успех1",
+      "webhookId": "eadfa446-4a81-4b8a-bf36-ecfbb3e47afd"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -7888,
+        2848
+      ],
+      "id": "7c036a79-26ea-42cd-9a03-e9ef43fd12da",
+      "name": "Отправлям код",
+      "webhookId": "9eb9fe9e-e7ae-4913-bfb6-c950621eb94d"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "binaryData": true,
+        "binaryPropertyName": "explain",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -7888,
+        3056
+      ],
+      "id": "d56978f4-ee9d-4471-b65f-66096ad33866",
+      "name": "Отправляем инструкцию",
+      "webhookId": "37bc48ed-179a-4549-8859-fb408cef6d5d"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -8128,
+        2848
+      ],
+      "id": "237ecf38-391e-4030-b23f-cb4e97053f8b",
+      "name": "Собрать код1 + отправка"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -8208,
+        3040
+      ],
+      "id": "b6497177-bcdf-4cf3-83ed-13839ad3c23d",
+      "name": "Собрать инструкция1 + отправка"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Успех, отправляю код и инструкцию",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -4336,
+        1984
+      ],
+      "id": "c42e2276-cbb9-457e-ab21-d6f385b84d97",
+      "name": "Успех2",
+      "webhookId": "eadfa446-4a81-4b8a-bf36-ecfbb3e47afd"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "binaryData": true,
+        "binaryPropertyName": "data2",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -3616,
+        2176
+      ],
+      "id": "c879953a-198c-4b54-a719-5cc60803cc1a",
+      "name": "Отправлям код1",
+      "webhookId": "9eb9fe9e-e7ae-4913-bfb6-c950621eb94d"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "binaryData": true,
+        "binaryPropertyName": "explain2",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -3840,
+        2352
+      ],
+      "id": "faf0407d-8362-442c-9c47-ce0f50be8353",
+      "name": "Отправляем инструкцию1",
+      "webhookId": "37bc48ed-179a-4549-8859-fb408cef6d5d"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Успех, отправляю код и инструкцию",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -288,
+        1040
+      ],
+      "id": "7a81812c-3542-4296-bac9-2fa71368c713",
+      "name": "Успех3",
+      "webhookId": "eadfa446-4a81-4b8a-bf36-ecfbb3e47afd"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3888,
+        2160
+      ],
+      "id": "6b24bab0-80ec-4b05-9b66-639f07a867ac",
+      "name": "Собрать код2 + отправка"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -4160,
+        2336
+      ],
+      "id": "0b21d980-9e37-451d-a214-d11517749c71",
+      "name": "Собрать инструкция2 + отправка"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "explanation",
+        "binaryPropertyName": "explain2",
+        "options": {
+          "fileName": "explanation2.txt"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -7584,
+        1600
+      ],
+      "id": "1b1f7253-8869-48ea-a14d-78dd3f5fedb8",
+      "name": "инструкция2"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Кодер и Тестировщик получили задачу!",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -11504,
+        1664
+      ],
+      "id": "334b8a33-1c38-4c14-8f91-34021e614c85",
+      "name": "Send a text message",
+      "webhookId": "d64d6686-1747-406a-8a47-97e21e234748"
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "messageId": "={{ $json.result.message_id }}",
+        "text": "Кодер подготовил первый код...",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -10400,
+        1200
+      ],
+      "id": "9be43a7d-9456-460b-977e-6d93fed5c48f",
+      "name": "Edit a text message",
+      "webhookId": "4f114549-3f21-4d96-a8a9-25d25f8604b8"
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "messageId": "={{ $json.result.message_id }}",
+        "text": "Тестировщик дает первую обратную связь...",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -8992,
+        912
+      ],
+      "id": "f8105202-9adb-4f89-b0da-7d7767cd6fa4",
+      "name": "Edit a text message1",
+      "webhookId": "6d94d780-5eff-4f3e-8d0f-a810b7f31e0d"
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "messageId": "={{ $json.result.message_id }}",
+        "text": "Отдаем код на внесение правок...",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -8048,
+        736
+      ],
+      "id": "fe78702c-6543-48f2-920a-b8744c8fc969",
+      "name": "Edit a text message2",
+      "webhookId": "d7660d79-830a-4d3f-aa1c-006c20af6c52"
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "messageId": "={{ $json.result.message_id }}",
+        "text": "Кодер подготовил 2 решение...",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -7184,
+        672
+      ],
+      "id": "804cfa21-53bc-41a4-9649-8bef72caf98d",
+      "name": "Edit a text message3",
+      "webhookId": "d7660d79-830a-4d3f-aa1c-006c20af6c52"
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "messageId": "={{ $json.result.message_id }}",
+        "text": "Получаем обратную связь от тестировщика...",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -5728,
+        432
+      ],
+      "id": "8687af8f-05f9-4b24-b948-fbfaa5767d97",
+      "name": "Edit a text message4",
+      "webhookId": "d7660d79-830a-4d3f-aa1c-006c20af6c52"
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "messageId": "={{ $json.result.message_id }}",
+        "text": "Отдаем код на внесение правок2...",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -4432,
+        272
+      ],
+      "id": "16b0048d-e86f-4baa-be1b-6ea684123434",
+      "name": "Edit a text message5",
+      "webhookId": "d7660d79-830a-4d3f-aa1c-006c20af6c52"
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "messageId": "={{ $json.result.message_id }}",
+        "text": "Кодер подготовил 3 решение...",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -3184,
+        144
+      ],
+      "id": "01320b01-011e-45bc-8920-111404ad3ab9",
+      "name": "Edit a text message6",
+      "webhookId": "d7660d79-830a-4d3f-aa1c-006c20af6c52"
+    },
+    {
+      "parameters": {
+        "operation": "editMessageText",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "messageId": "={{ $json.result.message_id }}",
+        "text": "Тестировщик дает обратную связь3",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -1408,
+        80
+      ],
+      "id": "df7f7dd9-c2fb-4b5a-a3ec-9cc8682dd4a8",
+      "name": "Edit a text message7",
+      "webhookId": "d7660d79-830a-4d3f-aa1c-006c20af6c52"
+    },
+    {
+      "parameters": {
+        "operation": "deleteMessage",
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "messageId": "={{ $json.result.message_id }}"
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "9181bebc-96b7-42d3-bd59-4951fd387ca2",
+      "name": "Delete a chat message",
+      "webhookId": "7fe74313-1d83-4e76-a385-4aa3a0e67491"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -10656,
+        1376
+      ],
+      "id": "0ba3a7bb-04d4-4fd6-9502-b42948623948",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -9360,
+        976
+      ],
+      "id": "0af24935-a59a-4c61-be10-456f42b6345a",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -8432,
+        800
+      ],
+      "id": "e2223a89-6813-4207-8a9b-7292c2fef98b",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -7632,
+        704
+      ],
+      "id": "374c493d-bb53-4ff6-905d-6723a6f3102e",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -6160,
+        544
+      ],
+      "id": "4dfd3d07-2437-455b-887b-313101a5686b",
+      "name": "Merge4"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -4848,
+        320
+      ],
+      "id": "cb658192-3425-4555-b84b-c3c25e98b6e9",
+      "name": "Merge5"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3648,
+        192
+      ],
+      "id": "f0c7bff0-1678-40d1-a5fd-fabec93c9b8f",
+      "name": "Merge6"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1856,
+        96
+      ],
+      "id": "55222ffd-9c6b-4ba1-a947-a8b02c56abf8",
+      "name": "Merge7"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "useDataOfInput": 2
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -464,
+        32
+      ],
+      "id": "3eb507d3-98fc-42f4-895f-c6a7d0c58711",
+      "name": "Merge8"
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CODER",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "пустота /coder": {
+      "main": [
+        [
+          {
+            "node": "CODER",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CODER": {
+      "main": [
+        [
+          {
+            "node": "Пустота ответа",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Пустота ответа": {
+      "main": [
+        [
+          {
+            "node": "парсинг кода2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ошибка",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Получить данные от MAIN": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "пустота /coder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "текст файл": {
+      "main": [
+        [
+          {
+            "node": "Собрать инструкция1 + отправка",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "CODER1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CODER2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CODER2": {
+      "main": [
+        [
+          {
+            "node": "Пустота ответа1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Проверяет на критические ошибки": {
+      "main": [
+        [
+          {
+            "node": "критично или нет",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Проверяет на критические ошибки",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Пустота ответа1": {
+      "main": [
+        [
+          {
+            "node": "парсинг кода1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ошибка1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "парсинг кода1": {
+      "main": [
+        [
+          {
+            "node": "инструкция2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "делаем код2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REVIEWER": {
+      "main": [
+        [
+          {
+            "node": "Пустота ответа2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Качаем код": {
+      "main": [
+        [
+          {
+            "node": "код2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Правки от тестировщика2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Пустота ответа2": {
+      "main": [
+        [
+          {
+            "node": "Собираем в файл ответ2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ошибка2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "REVIEWER",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "отправили код2": {
+      "main": [
+        [
+          {
+            "node": "Качаем код",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "собираем код2+ТЗ": {
+      "main": [
+        [
+          {
+            "node": "REVIEWER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Собираем в файл ответ2": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "парсинг кода2": {
+      "main": [
+        [
+          {
+            "node": "текст файл",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "делаем файл код1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "делаем файл код1": {
+      "main": [
+        [
+          {
+            "node": "Отправка код1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "код1 текст",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Собрать код1 + отправка",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Отправка код1": {
+      "main": [
+        [
+          {
+            "node": "получаем ID кода1 и ТЗ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "получаем ID кода1 и ТЗ": {
+      "main": [
+        [
+          {
+            "node": "Идем к тестировщику",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Только ТЗ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Только ТЗ": {
+      "main": [
+        [
+          {
+            "node": "код1+правки+ТЗ",
+            "type": "main",
+            "index": 2
+          },
+          {
+            "node": "собираем код2+ТЗ",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "код2+правки2+ТЗ",
+            "type": "main",
+            "index": 2
+          },
+          {
+            "node": "собираем код3+ТЗ",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "код3+правки3+ТЗ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Идем к тестировщику": {
+      "main": [
+        [
+          {
+            "node": "Правки от тестировщика",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Правки от тестировщика": {
+      "main": [
+        [
+          {
+            "node": "код1+правки+ТЗ",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "правки+код1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "код1 текст": {
+      "main": [
+        [
+          {
+            "node": "код1+правки+ТЗ",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "правки+код1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "код1+правки+ТЗ": {
+      "main": [
+        [
+          {
+            "node": "Проверяет на критические ошибки",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "делаем код2": {
+      "main": [
+        [
+          {
+            "node": "отправили код2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Собрать код2 + отправка",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Проверяет на критические ошибки1": {
+      "main": [
+        [
+          {
+            "node": "критично или нет1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Проверяет на критические ошибки1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Правки от тестировщика2": {
+      "main": [
+        [
+          {
+            "node": "код2+правки2+ТЗ",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "правки2+код2",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "код2+правки2+ТЗ": {
+      "main": [
+        [
+          {
+            "node": "Проверяет на критические ошибки1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "правки+код1": {
+      "main": [
+        [
+          {
+            "node": "CODER2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "правки2+код2": {
+      "main": [
+        [
+          {
+            "node": "CODER3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "код2": {
+      "main": [
+        [
+          {
+            "node": "собираем код2+ТЗ",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "код2+правки2+ТЗ",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "правки2+код2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "критично или нет": {
+      "main": [
+        [
+          {
+            "node": "правки+код1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Успех1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ошибка зацикливани1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ПРАВЕР ТЕГОВ2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "критично или нет1": {
+      "main": [
+        [
+          {
+            "node": "правки2+код2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Успех2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ошибка зацикливани2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ПРАВЕР ТЕГОВ1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Пустота ответа3": {
+      "main": [
+        [
+          {
+            "node": "парсинг кода",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ошибка3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "парсинг кода": {
+      "main": [
+        [
+          {
+            "node": "текст код3 инструкция",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "делаем код3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REVIEWER1": {
+      "main": [
+        [
+          {
+            "node": "Пустота ответа4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Правки от тестировщика3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Пустота ответа4": {
+      "main": [
+        [
+          {
+            "node": "правки3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ошибка4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "REVIEWER1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "делаем код3": {
+      "main": [
+        [
+          {
+            "node": "отправили код3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Собрать код3 + отправка",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Собрать код3 + отправка1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "отправили код3": {
+      "main": [
+        [
+          {
+            "node": "Качаем код3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Качаем код3": {
+      "main": [
+        [
+          {
+            "node": "код3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "код3": {
+      "main": [
+        [
+          {
+            "node": "собираем код3+ТЗ",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "код3+правки3+ТЗ",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "собираем код3+ТЗ": {
+      "main": [
+        [
+          {
+            "node": "REVIEWER1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Проверяет на критические ошибки2": {
+      "main": [
+        [
+          {
+            "node": "критично или нет2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Проверяет на критические ошибки2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Правки от тестировщика3": {
+      "main": [
+        [
+          {
+            "node": "код3+правки3+ТЗ",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "критично или нет2": {
+      "main": [
+        [
+          {
+            "node": "Все пропало",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Успех3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ошибка зацикливани3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "ПРАВЕР ТЕГОВ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "код3+правки3+ТЗ": {
+      "main": [
+        [
+          {
+            "node": "Проверяет на критические ошибки2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "COD": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "CODER3",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CODER3": {
+      "main": [
+        [
+          {
+            "node": "Пустота ответа3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Все пропало": {
+      "main": [
+        [
+          {
+            "node": "Собрать код3 + отправка",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Собрать правки3 + отправка",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "текст код3 инструкция": {
+      "main": [
+        [
+          {
+            "node": "Собрать инструкция + отправка",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Собрать код3 + отправка": {
+      "main": [
+        [
+          {
+            "node": "Отправляем код3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Собрать правки3 + отправка": {
+      "main": [
+        [
+          {
+            "node": "Отправляем правки3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Собрать код3 + отправка1": {
+      "main": [
+        [
+          {
+            "node": "Отправлям код3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Собрать инструкция + отправка": {
+      "main": [
+        [
+          {
+            "node": "Отправляем инструкцию3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "правки3": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Собрать правки3 + отправка",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ПРАВЕР ТЕГОВ": {
+      "main": [
+        [
+          {
+            "node": "Разделение по тегам1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Разделение по тегам1": {
+      "main": [
+        [
+          {
+            "node": "критично или нет2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ПРАВЕР ТЕГОВ",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ПРАВЕР ТЕГОВ1": {
+      "main": [
+        [
+          {
+            "node": "Разделение по тегам",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ПРАВЕР ТЕГОВ1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Разделение по тегам": {
+      "main": [
+        [
+          {
+            "node": "критично или нет1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ПРАВЕР ТЕГОВ2": {
+      "main": [
+        [
+          {
+            "node": "Разделение по тегам2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "ПРАВЕР ТЕГОВ2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Разделение по тегам2": {
+      "main": [
+        [
+          {
+            "node": "критично или нет",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Успех1": {
+      "main": [
+        [
+          {
+            "node": "Собрать код1 + отправка",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Собрать инструкция1 + отправка",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Собрать код1 + отправка": {
+      "main": [
+        [
+          {
+            "node": "Отправлям код",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Собрать инструкция1 + отправка": {
+      "main": [
+        [
+          {
+            "node": "Отправляем инструкцию",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Успех2": {
+      "main": [
+        [
+          {
+            "node": "Собрать код2 + отправка",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Собрать инструкция2 + отправка",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Успех3": {
+      "main": [
+        [
+          {
+            "node": "Собрать код3 + отправка1",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Собрать инструкция + отправка",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Собрать код2 + отправка": {
+      "main": [
+        [
+          {
+            "node": "Отправлям код1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Собрать инструкция2 + отправка": {
+      "main": [
+        [
+          {
+            "node": "Отправляем инструкцию1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "инструкция2": {
+      "main": [
+        [
+          {
+            "node": "Собрать инструкция2 + отправка",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit a text message": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit a text message1": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit a text message2": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit a text message3": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit a text message4": {
+      "main": [
+        [
+          {
+            "node": "Merge5",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit a text message5": {
+      "main": [
+        [
+          {
+            "node": "Merge6",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit a text message6": {
+      "main": [
+        [
+          {
+            "node": "Merge7",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit a text message7": {
+      "main": [
+        [
+          {
+            "node": "Merge8",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Edit a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Edit a text message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "Edit a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "Edit a text message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge5": {
+      "main": [
+        [
+          {
+            "node": "Edit a text message5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge6": {
+      "main": [
+        [
+          {
+            "node": "Edit a text message6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge7": {
+      "main": [
+        [
+          {
+            "node": "Edit a text message7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge8": {
+      "main": [
+        [
+          {
+            "node": "Delete a chat message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
+}

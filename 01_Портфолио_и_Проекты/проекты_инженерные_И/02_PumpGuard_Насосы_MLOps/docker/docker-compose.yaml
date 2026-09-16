@@ -1,0 +1,32 @@
+# Файл: docker/docker-compose.yaml
+version: '3.8'
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: pumpguard-clickhouse
+    environment:
+      # Задаем базовые учетные данные и создаем целевую БД при старте
+      - CLICKHOUSE_DB=pumpguard
+      - CLICKHOUSE_USER=pump_admin
+      - CLICKHOUSE_PASSWORD=pump_password
+      # Разрешаем созданным пользователям управлять правами
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+    ports:
+      - "8123:8123" # HTTP интерфейс (для DBeaver/Tabix и REST запросов)
+      - "9000:9000" # Native интерфейс (самый быстрый, именно его мы будем юзать в PySpark)
+    volumes:
+      # Персистентность данных: без этого при рестарте контейнера все собранные терабайты исчезнут
+      - clickhouse_data:/var/lib/clickhouse
+      - clickhouse_log:/var/log/clickhouse-server
+    networks:
+      - pumpguard_net
+    restart: unless-stopped # Контейнер будет подниматься сам после перезагрузки машины
+
+volumes:
+  clickhouse_data:
+  clickhouse_log:
+
+networks:
+  pumpguard_net:
+    driver: bridge # Создаем общую сеть, чтобы потом Airflow и Spark видели ClickHouse по имени хостаz  

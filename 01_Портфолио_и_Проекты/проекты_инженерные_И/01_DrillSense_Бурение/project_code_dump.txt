@@ -1,0 +1,328 @@
+============================================================
+ФАЙЛ: .\README.md
+============================================================
+
+
+============================================================
+ФАЙЛ: .\requirements.txt
+============================================================
+# Ошибка чтения файла: 'utf-8' codec can't decode byte 0xff in position 0: invalid start byte
+
+
+============================================================
+ФАЙЛ: .\app\main.py
+============================================================
+from src.model import ROP_Predictor
+from app import ui_components
+import pickle
+import torch
+import os
+import sys
+import streamlit as st
+
+# 1. БЕЗОПАСНАЯ НАСТРОЙКА ПУТЕЙ
+current_dir = os.path.dirname(os.path.abspath(__file__))
+root_dir = os.path.dirname(current_dir)
+if root_dir not in sys.path:
+    # Используем append, чтобы не сломать системные импорты
+    sys.path.append(root_dir)
+
+# 2. РЕШЕНИЕ ПРОБЛЕМЫ "БЕСКОНЕЧНОЙ ЗАГРУЗКИ" НА WINDOWS
+# Это предотвращает тихое зависание PyTorch при работе со Streamlit
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+
+# ВАЖНО: set_page_config должна быть самой первой командой Streamlit
+st.set_page_config(page_title="DrillSense AI", page_icon="🛢️")
+
+
+# Ограничиваем количество потоков PyTorch (еще одна защита от зависаний)
+torch.set_num_threads(1)
+
+# Импорт наших локальных модулей
+
+# 3. ОСНОВНОЙ КОД ПРИЛОЖЕНИЯ
+st.title("🛢️ DrillSense AI")
+st.write("Искусственный интеллект для предсказания механической скорости бурения (ROP).")
+st.markdown("---")
+
+# Генерируем абсолютные пути к файлам моделей
+scaler_path = os.path.join(root_dir, 'models', 'scaler.pkl')
+model_path = os.path.join(root_dir, 'models', 'rop_model.pt')
+
+# Загрузка скейлера
+try:
+    with open(scaler_path, 'rb') as f:
+        scaler = pickle.load(f)
+except FileNotFoundError:
+    st.error(f"❌ Ошибка: Файл скейлера не найден по пути {scaler_path}")
+    st.stop()
+except Exception as e:
+    st.error(f"❌ Неизвестная ошибка при загрузке скейлера: {e}")
+    st.stop()
+
+# Загрузка модели PyTorch
+try:
+    model = ROP_Predictor()
+    model.load_state_dict(torch.load(model_path, weights_only=True))
+    model.eval()
+except FileNotFoundError:
+    st.error(f"❌ Ошибка: Файл модели не найден по пути {model_path}")
+    st.stop()
+except Exception as e:
+    st.error(f"❌ Ошибка при загрузке модели PyTorch: {e}")
+    st.stop()
+
+# Получаем данные от пользователя из боковой панели
+user_data = ui_components.get_user_input()
+
+# Масштабируем ввод пользователя
+scaled_data = scaler.transform(user_data)
+
+# Превращаем данные в тензор PyTorch
+input_tensor = torch.tensor(scaled_data, dtype=torch.float32)
+
+# Делаем предсказание
+with torch.no_grad():
+    prediction = model(input_tensor)
+
+# Выводим результат на экран
+st.subheader("📊 Результат прогноза:")
+st.metric(label="Прогнозируемый ROP (м/ч)",
+          value=f"{round(prediction.item(), 2)}")
+
+
+============================================================
+ФАЙЛ: .\app\ui_components.py
+============================================================
+import streamlit as st
+import numpy as np
+
+
+def get_user_input():
+    """
+    Создает ползунки в боковой панели (sidebar) и возвращает введенные пользователем данные 
+    в виде 2D массива NumPy (так как скейлер ожидает на вход таблицу).
+    """
+    st.sidebar.header("⚙️ Параметры бурения")
+
+    # Создаем ползунки (задаем мин., макс. и значение по умолчанию)
+    wob = st.sidebar.slider("Нагрузка на долото (WOB, kkgf)",
+                            min_value=0.0, max_value=30.0, value=10.0, step=0.5)
+    rpm = st.sidebar.slider("Обороты ротора (RPM)",
+                            min_value=0, max_value=250, value=100, step=1)
+    flow = st.sidebar.slider("Расход жидкости (Flow Rate)",
+                             min_value=0, max_value=4000, value=1000, step=10)
+    torque = st.sidebar.slider("Крутящий момент (Torque, kN.m)",
+                               min_value=0.0, max_value=50.0, value=15.0, step=0.5)
+
+    # Возвращаем массив. Важно: двойные скобки [[...]] создают таблицу из 1 строки и 4 колонок!
+    user_data = np.array([[wob, rpm, flow, torque]])
+
+    return user_data
+
+
+============================================================
+ФАЙЛ: .\app\__init__.py
+============================================================
+
+
+============================================================
+ФАЙЛ: .\notebooks\01_eda_and_cleaning.ipynb
+============================================================
+# --- Ячейка 1 (code) ---
+import pandas as pd
+
+# 1. Загружаем сырые данные
+df = pd.read_csv('../data/raw/Norway-NA-15_47_9-F-9 A depth.csv')
+
+# 2. Задаем точные имена колонок из нашего датасета
+columns_to_keep = [
+    'Corrected Surface Weight on Bit kkgf', # WOB (Нагрузка на долото)
+    'Average Rotary Speed rpm',             # RPM (Обороты ротора)
+    'Total SPM 1/min',                      # Flow Rate (Расход жидкости в ходах насоса)
+    'Average Surface Torque kN.m',          # Torque (Крутящий момент)
+    'Rate of Penetration m/h'               # ROP (Скорость бурения - наш таргет)
+]
+
+# 3. Оставляем в датафрейме только эти 5 колонок
+df = df[columns_to_keep]
+
+# 4. Переименовываем их в короткие и удобные названия
+df.columns = ['WOB', 'RPM', 'Flow Rate', 'Torque', 'ROP']
+
+# 5. Очистка: удаляем пустые значения (NaN) и строки, где скорость нулевая или отрицательная
+df_clean = df[df['ROP'] > 0].dropna()
+
+# 6. Проверяем, сколько строк осталось после очистки
+print(f"Размер очищенного датасета: {df_clean.shape}")
+
+df_clean.to_csv('../data/processed/clean_drilling_data.csv', index=False)
+
+# 7. Выводим первые 5 строк красивой таблицы
+df_clean.head()
+
+
+
+============================================================
+ФАЙЛ: .\notebooks\02_model_experiments.ipynb
+============================================================
+# Ошибка чтения файла: Expecting value: line 1 column 1 (char 0)
+
+
+============================================================
+ФАЙЛ: .\src\data_processing.py
+============================================================
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+import pickle
+
+
+def load_and_split_data(filepath):
+    """
+    Загружает данные, отделяет целевую переменную и разбивает на Train/Test.
+    """
+    # 1. Загружаем данные по пути, который передали в функцию
+    df = pd.read_csv('../data/processed/clean_drilling_data.csv')
+
+    # 2. Отделяем целевую переменную (ROP) в y (Ответы)
+    y = df['ROP']
+
+    # 3. Все остальные колонки отправляем в X (Признаки)
+    X = df.drop('ROP', axis=1)
+
+    # 4. Разбиваем на обучающую (80%) и тестовую (20%) выборки
+    # random_state=42 нужен, чтобы случайное разбиение всегда было одинаковым
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42)
+
+    # Возвращаем 4 кусочка данных из функции
+    return X_train, X_test, y_train, y_test
+
+
+def scale_data(X_train, X_test):
+    """
+    Масштабирует данные (приводит все числа к одному порядку) и сохраняет скейлер.
+    """
+    # Создаем объект StandardScaler
+    scaler = StandardScaler()
+
+    # "Обучаем" скейлер на X_train и сразу применяем к нему
+    X_train_scaled = scaler.fit_transform(X_train)
+
+    # К тестовым данным ТОЛЬКО применяем (без обучения!)
+    X_test_scaled = scaler.transform(X_test)
+
+    # Сохраняем обученный скейлер в файл, чтобы потом использовать в веб-приложении
+    with open('../models/scaler.pkl', 'wb') as f:
+        pickle.dump(scaler, f)
+
+    return X_train_scaled, X_test_scaled
+
+
+============================================================
+ФАЙЛ: .\src\model.py
+============================================================
+import torch
+import torch.nn as nn
+
+
+class ROP_Predictor(nn.Module):
+    def __init__(self):
+        # 1. ОБЯЗАТЕЛЬНО: Инициализируем родительский класс nn.Module
+        # Без этой строчки PyTorch выдаст ошибку
+        super().__init__()
+
+        # Создаем "склад" наших слоев
+        # Вход: 4 фичи (WOB, RPM, Flow Rate, Torque) -> выход 64 нейрона
+        self.fc1 = nn.Linear(4, 64)
+
+        # Функция активации (добавляет нелинейность, чтобы сеть могла учить сложные вещи)
+        self.relu = nn.ReLU()
+
+        # Скрытый слой: 64 нейрона -> 32 нейрона
+        self.fc2 = nn.Linear(64, 32)
+
+        # Выходной слой: 32 нейрона -> 1 число (наш ROP)
+        self.fc3 = nn.Linear(32, 1)
+
+    def forward(self, x):
+        # 2. КОНВЕЙЕР: Пропускаем входные данные 'x' через наши слои по очереди
+
+        x = self.fc1(x)    # Пропускаем через первый слой
+        x = self.relu(x)   # Применяем активацию
+
+        x = self.fc2(x)    # Пропускаем через второй слой
+        # Снова применяем активацию (между скрытыми слоями это стандарт)
+        x = self.relu(x)
+
+        x = self.fc3(x)    # Пропускаем через финальный слой
+
+        # 3. Возвращаем готовое предсказание
+        return x
+
+
+============================================================
+ФАЙЛ: .\src\train.py
+============================================================
+import torch
+import torch.nn as nn
+from src.data_processing import load_and_split_data, scale_data
+from src.model import ROP_Predictor
+
+# 1. Указываем путь к данным и загружаем их
+filepath = '../data/processed/clean_drilling_data.csv'
+X_train, X_test, y_train, y_test = load_and_split_data(filepath)
+
+# 2. Масштабируем признаки (X)
+X_train_scaled, X_test_scaled = scale_data(X_train, X_test)
+
+# 3. ИНИЦИАЛИЗАЦИЯ МОДЕЛИ
+model = ROP_Predictor()
+
+# 4. Превращаем данные в тензоры PyTorch
+X_train_tensor = torch.tensor(X_train_scaled, dtype=torch.float32)
+X_test_tensor = torch.tensor(X_test_scaled, dtype=torch.float32)
+y_train_tensor = torch.tensor(y_train.values, dtype=torch.float32).view(-1, 1)
+y_test_tensor = torch.tensor(y_test.values, dtype=torch.float32).view(-1, 1)
+
+# 5. Задаем функцию потерь и оптимизатор
+criterion = nn.MSELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+# 6. ЦИКЛ ОБУЧЕНИЯ
+epochs = 200
+model.train()  # Переводим модель в режим обучения
+
+print("Начинаем обучение нейросети...")
+for epoch in range(epochs):
+    # Обнуляем градиенты (чтобы они не накапливались с прошлого шага)
+    optimizer.zero_grad()
+
+    # Делаем предсказание на всех тренировочных данных
+    outputs = model(X_train_tensor)
+
+    # Считаем ошибку (сравниваем предсказания с реальными ответами)
+    loss = criterion(outputs, y_train_tensor)
+
+    # Обратное распространение ошибки
+    loss.backward()
+
+    # Шаг оптимизатора (обновление весов нейросети)
+    optimizer.step()
+
+    # Выводим прогресс каждые 20 эпох
+    if (epoch + 1) % 20 == 0:
+        print(f'Эпоха [{epoch+1}/{epochs}], Ошибка (Loss): {loss.item():.4f}')
+
+# 7. СОХРАНЕНИЕ МОДЕЛИ (Строго после цикла, без отступов)
+print("Обучение завершено! Сохраняем веса модели...")
+torch.save(model.state_dict(), '../models/rop_model.pt')
+print("Успех: файл rop_model.pt сохранен в папку models!")
+
+
+============================================================
+ФАЙЛ: .\src\__init__.py
+============================================================
+
+

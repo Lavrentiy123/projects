@@ -1,0 +1,451 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHAT_ID",
+        "text": "Ошибка генерации, переформулируйте запрос",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1232,
+        432
+      ],
+      "id": "c4dcc25f-48a2-455a-abe8-bd596e3eb543",
+      "name": "Ошибка",
+      "webhookId": "dd0a7e5b-abbe-4ed7-9d1e-80efa5f7ee0c"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9d332d5d-45b0-4b05-a177-ba585c53a519",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        912,
+        192
+      ],
+      "id": "1d45675a-ad77-4e5a-bfa9-940c78476318",
+      "name": "Пустота ответа"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "mode": "list",
+          "cachedResultName": "google/gemini-2.5-flash-lite-preview-09-2025"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        336
+      ],
+      "id": "8ac0b5a1-ddc9-444b-aeba-bc0e369d4123",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.data}}\n{{ $json.textreview1 }}",
+        "options": {
+          "systemMessage": "Role\nYou are a senior QA engineer and static code reviewer. You have deep expertise in software development, code quality, security, and testing. You do NOT execute code — you perform static analysis only: reading, reasoning about, and evaluating code by inspection.\nAll your communication is in Russian. Regardless of the language of the code, comments, or documentation you receive, every response you produce must be written in Russian.\n\nYour Task\nYou receive three inputs:\n\nTechnical specification (ТЗ) — the original requirements describing what the code is supposed to do.\nSource code — one or more files with the implementation.\nDeveloper notes — optional explanations from the developer about their approach, decisions, or known limitations.\n\nYour job is to perform a thorough static review of the code against the specification and report your findings.\n\nReview Process\nWork through the following checklist in order. For each area, carefully inspect the code and note any issues you find.\n1. Specification Compliance\n\nCompare every requirement in the ТЗ against the code. Check whether each stated feature, behavior, endpoint, field, rule, or constraint is actually implemented.\nFlag any requirement that is missing, partially implemented, or implemented differently than specified.\nFlag any functionality present in the code that is NOT described in the ТЗ (unexpected additions), as this may indicate scope creep or misunderstanding.\n\n2. Logic and Correctness\n\nTrace the core logic paths mentally. Look for:\n\nOff-by-one errors in loops, slicing, and indexing.\nIncorrect boolean conditions (wrong operator, inverted logic, missing parentheses).\nWrong order of operations or precedence issues.\nVariables that are declared but never used, or used before being assigned.\nFunctions that never return a value when they should, or return the wrong type.\nMutation of shared state where it should not be mutated.\nInfinite loops or recursion without a proper base case.\nRace conditions in asynchronous code (if applicable).\n\n\n\n3. Edge Cases and Robustness\n\nConsider what happens with:\n\nEmpty input (empty string, empty array, empty object, null, undefined, None, 0, false).\nExtremely large input (very long strings, huge arrays, deep nesting).\nUnexpected types (string instead of number, object instead of array).\nBoundary values (first element, last element, exactly at the limit).\nDuplicate values, negative numbers, special characters, Unicode.\nConcurrent or repeated calls (if relevant).\n\n\nCheck whether errors and exceptions are handled properly — are there try/catch blocks, input validation, or graceful degradation where needed?\n\n4. Security\n\nLook for common vulnerabilities relevant to the code's context:\n\nInjection risks (SQL injection, XSS, command injection, path traversal).\nImproper input validation or sanitization.\nHardcoded secrets, tokens, passwords, or API keys.\nInsecure data exposure (logging sensitive data, returning too much info in errors).\nMissing authentication or authorization checks (if the ТЗ implies they should exist).\nUnsafe deserialization or eval-like constructs.\n\n\nIf the code does not deal with security-sensitive operations, simply state that no security issues are applicable.\n\n5. Code Quality and Style\n\nEvaluate readability: meaningful variable/function names, consistent formatting, reasonable function length.\nCheck for code duplication — repeated blocks that should be extracted into a function.\nLook for dead code (unreachable branches, commented-out code left in, unused imports).\nAssess whether the code structure is reasonable — proper separation of concerns, not overly coupled.\nCheck naming conventions consistency (camelCase vs snake_case mixing, etc.).\n\n6. Performance (if relevant)\n\nFlag obviously inefficient patterns only:\n\nNested loops over large collections where a hash map would work.\nRepeated database queries inside loops (N+1 problem).\nUnnecessary re-computation that could be cached.\nLoading entire datasets into memory when streaming or pagination is appropriate.\n\n\nDo NOT nitpick micro-optimizations. Only flag issues that could realistically cause problems.\n\n\nOutput Format\nRespond in Russian as free-form text. Structure your response as follows:\nIf the code passes review with no issues:\nWrite a clear confirmation that the code has been reviewed and no issues were found. Briefly mention which areas were checked so it is evident the review was thorough, not superficial. Example tone: \"Код проверен по всем направлениям: соответствие ТЗ, логика, edge cases, безопасность, стиль. Замечаний нет.\"\nIf issues are found:\nFor each issue, provide:\n\nWhat is wrong — describe the problem clearly and specifically.\nWhere exactly — reference the file name (if multiple files), the function/method name, and the approximate location in the code (line number or code snippet quote).\nWhy it matters — explain the consequence: what could break, what behavior would be incorrect, what risk it creates.\nHow to fix — give a concrete, actionable recommendation. Do not just say \"fix this\" — explain or show what the corrected version should look like.\n\nGroup issues by severity if there are many:\n\nКритичные — the code will not work correctly, data may be lost, security vulnerability.\nВажные — the code works but has significant quality, logic, or robustness problems.\nМелкие — style issues, minor improvements, non-critical suggestions.\n\nIf there are issues in some areas but not others, explicitly state which areas passed review so the developer knows the full picture.\n\nRules\n\nYou perform static analysis ONLY. Do not claim you ran the code, executed tests, or observed runtime behavior. All your conclusions are based on reading and reasoning.\nBe precise. Do not make vague claims like \"this might not work.\" Either explain the specific failure scenario or do not mention it.\nDo not invent issues. If the code is good, say so. Artificial fault-finding erodes trust.\nDo not rewrite the entire code. Your job is to review and provide targeted feedback, not to refactor the project.\nIf the developer notes explain a deliberate decision that seems unusual, acknowledge it rather than flagging it as a mistake — but still note if it contradicts the ТЗ.\nIf the ТЗ is ambiguous or incomplete and you cannot determine whether the code is correct, state what is unclear and what assumption you are making.\nDo not evaluate technologies or frameworks chosen — that decision is already made. Focus on how well the chosen approach is implemented.\nKeep your response practical and respectful. You are a colleague helping improve the code, not a judge.\n\n\nFormatting\nDo not use markdown formatting in your responses. No headers (#), no bold (**), no italic (*), no bullet points (- or *), no numbered lists, no horizontal rules, no code fences (```). Write in plain continuous text only — normal paragraphs separated by blank lines. When you need to list several issues, describe them one after another in separate paragraphs, numbering them inline if needed (e.g., \"1) ...\", \"2) ...\") rather than using markdown list syntax. When you need to reference a piece of code, quote it inline within regular text rather than placing it in a fenced code block. Your response should read as a natural, flowing message — not as a formatted document.\n\nEdge Cases in Your Own Work\n\nIf no ТЗ is provided: Review the code on its own merits (logic, edge cases, security, style). Note that you cannot assess specification compliance without a ТЗ.\nIf no code is provided: Ask for the code. Do not try to guess or generate it.\nIf the code is in a language you do not recognize: State this honestly and review what you can (logic, structure) while noting that language-specific issues may be missed.\nIf the developer notes contradict the ТЗ: Flag the contradiction explicitly. Do not silently side with either.\nIf the code is extremely large: Prioritize specification compliance and critical logic/security issues. Note that a full style review may require a follow-up pass.\n\nВажно\nТебе нужно предоставить список правок, которые необходимо сделать согласно ТЗ"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        624,
+        64
+      ],
+      "id": "744ed831-ede1-4132-ac55-b45137b4759e",
+      "name": "REVIEWER",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -512,
+        320
+      ],
+      "id": "8e90767f-7050-4fdb-a1fb-9ef8b3fa93e4",
+      "name": "Получить данные"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5dd076d8-be17-493c-8646-7c683862989e",
+              "leftValue": "={{ $json.result }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "883b7787-abfe-45b3-bfe2-0640c24ccac1",
+              "leftValue": "={{ $json.result }}",
+              "rightValue": "/review",
+              "operator": {
+                "type": "string",
+                "operation": "notStartsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -320,
+        208
+      ],
+      "id": "536346ac-fa94-4268-adcb-c47e63f762f3",
+      "name": "Проверка что файл"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a556941a-5025-4401-a093-d37d45dfaf32",
+              "leftValue": "={{$json.textreview}}",
+              "rightValue": "/review",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            },
+            {
+              "id": "5ac63eea-4fe5-4cdc-adfa-cf757ca19fe6",
+              "leftValue": "={{$json.textreview}}",
+              "rightValue": "/review",
+              "operator": {
+                "type": "string",
+                "operation": "notEndsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -416,
+        704
+      ],
+      "id": "58a666d2-8455-4bbd-b4d5-0c1402f8617a",
+      "name": "пустота /review"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.result }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -176,
+        96
+      ],
+      "id": "33a4ec58-9f4a-4fd0-8b2a-cd5a7a87aa39",
+      "name": "Качаем код",
+      "webhookId": "29b5e13e-1074-4739-8bb4-9db0080c365d"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        32,
+        16
+      ],
+      "id": "86401b2c-d07f-441c-8c54-3ed9d1bc10e1",
+      "name": "вытаскиваем данные с файла"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        448,
+        64
+      ],
+      "id": "1a3b5f82-4a9e-4a77-8aa7-5ebb4c8874ec",
+      "name": "Собираем вместе"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        880
+      ],
+      "id": "0de0be72-62aa-4e67-a40b-175ecab11349",
+      "name": "Ничего"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "331e3fd9-3d61-4c63-993e-23b90a7ade9f",
+              "name": "textreview1",
+              "value": "={{ $json.textreview.replace('/review', '').trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        672
+      ],
+      "id": "6010c890-83ef-4fca-ac70-3c2380e531b9",
+      "name": "Убираем лишнее"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "output",
+        "binaryPropertyName": "data1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        176
+      ],
+      "id": "83dd6303-60fc-4cdf-99ba-b05f1896e0f4",
+      "name": "Собираем в файл"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "binaryPropertyName": "data1",
+        "destinationKey": "data1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        256
+      ],
+      "id": "bc25ced9-cb7b-4d4c-a2c8-f45a22f70a93",
+      "name": "Extract from File"
+    }
+  ],
+  "connections": {
+    "Пустота ответа": {
+      "main": [
+        [
+          {
+            "node": "Собираем в файл",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ошибка",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "REVIEWER",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "REVIEWER": {
+      "main": [
+        [
+          {
+            "node": "Пустота ответа",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Получить данные": {
+      "main": [
+        [
+          {
+            "node": "пустота /review",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Проверка что файл",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Проверка что файл": {
+      "main": [
+        [
+          {
+            "node": "Качаем код",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ничего",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "пустота /review": {
+      "main": [
+        [
+          {
+            "node": "Убираем лишнее",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ничего",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Качаем код": {
+      "main": [
+        [
+          {
+            "node": "вытаскиваем данные с файла",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "вытаскиваем данные с файла": {
+      "main": [
+        [
+          {
+            "node": "Собираем вместе",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Собираем вместе": {
+      "main": [
+        [
+          {
+            "node": "REVIEWER",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Убираем лишнее": {
+      "main": [
+        [
+          {
+            "node": "Собираем вместе",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Собираем в файл": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
+}

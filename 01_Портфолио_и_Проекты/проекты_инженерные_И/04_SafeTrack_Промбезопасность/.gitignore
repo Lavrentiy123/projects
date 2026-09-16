@@ -1,0 +1,13 @@
+venv/
+env/
+
+pycache/
+*.pyc
+
+data/
+
+runs/
+*.pt
+*.onnx
+
+.DS_Store

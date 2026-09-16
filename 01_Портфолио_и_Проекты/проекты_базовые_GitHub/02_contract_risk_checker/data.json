@@ -1,0 +1,38 @@
+[
+  {
+    "contract_id": "CTR-2026-081",
+    "counterparty": "ООО «ТехноСнаб Плюс»",
+    "contract_type": "Поставка оборудования",
+    "amount_rub": 4500000.0,
+    "payment_terms": "Аванс 30%, остаток в течение 15 дней после поставки",
+    "postpayment_days": 15,
+    "penalty_per_day_pct": 0.05,
+    "has_force_majeure_clause": true,
+    "jurisdiction": "Арбитражный суд г. Санкт-Петербурга",
+    "delivery_days": 30
+  },
+  {
+    "contract_id": "CTR-2026-082",
+    "counterparty": "АО «ГлобалСервисТрейд»",
+    "contract_type": "Оказание подрядных услуг",
+    "amount_rub": 12800000.0,
+    "payment_terms": "100% постоплата в течение 60 рабочих дней",
+    "postpayment_days": 60,
+    "penalty_per_day_pct": 0.15,
+    "has_force_majeure_clause": true,
+    "jurisdiction": "Арбитражный суд г. Москвы",
+    "delivery_days": 90
+  },
+  {
+    "contract_id": "CTR-2026-083",
+    "counterparty": "ООО «Альфа-Монолит»",
+    "contract_type": "Поставка комплектующих",
+    "amount_rub": 8900000.0,
+    "payment_terms": "100% постоплата в течение 120 календарных дней",
+    "postpayment_days": 120,
+    "penalty_per_day_pct": 0.5,
+    "has_force_majeure_clause": false,
+    "jurisdiction": "Третейский суд при компании Поставщика",
+    "delivery_days": 45
+  }
+]

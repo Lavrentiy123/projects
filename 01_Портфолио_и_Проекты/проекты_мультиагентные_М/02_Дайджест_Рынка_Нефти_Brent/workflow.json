@@ -1,0 +1,645 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=oil+gas+industry&hl=en",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -608,
+        736
+      ],
+      "id": "fedf2bfc-0b65-4297-88ef-d612de5e33ca",
+      "name": "HTTP Request",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.xml",
+      "typeVersion": 1,
+      "position": [
+        -416,
+        944
+      ],
+      "id": "a1ca831a-3ec9-45bc-abf6-bf8cbe3cf25c",
+      "name": "XML"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "rss.channel.item",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        768
+      ],
+      "id": "6cbc561a-9433-483f-b609-77b8029a364a",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "maxItems": 25
+      },
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        928
+      ],
+      "id": "a0779077-a690-4df6-a3ff-b94c6e1680c7",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const items = $input.all();\n  let newsList = '';\n\n  for (let i = 0; i < items.length; i++) {\n    const title = items[i].json.title || 'Без заголовка';\n    const link = items[i].json.link || '';\n    newsList += `${i + 1}. ${title}\\nСсылка: ${link}\\n\\n`;\n  }\n\n  return [{ json: { combinedNews: newsList } }];\n\n} catch (error) {\n  return [{ json: { \n    combinedNews: 'Ошибка при обработке новостей', \n    error: error.message \n  } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        736
+      ],
+      "id": "950f56a9-df4b-4949-8546-ca6988bccee2",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHANNEL_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1760,
+        304
+      ],
+      "id": "6c49d99f-b10a-4b3f-8ed8-c1bf6940a71a",
+      "name": "Send a text message",
+      "webhookId": "5a8588ff-b7d5-407d-8a69-19f3f29f484a"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\nconst text = $input.first().json.output;\n\nconst clean = text\n  .replace(/\\*\\*/g, '')\n  .replace(/\\*/g, '')\n  .replace(/_/g, ' ')\n  .replace(/`/g, '');\n\nreturn [{ json: { cleanText: clean } }];\n\n} catch (error) {\n  return [{ json: { \n    text: 'Ошибка при разбивке текста на чанки', \n    error: error.message \n  } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        800
+      ],
+      "id": "704b4d31-3c3e-44c6-a148-d0b5fb64509a",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -976,
+        624
+      ],
+      "id": "043caae0-4346-4275-890e-7dfd8971acb7",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "mode": "list",
+          "cachedResultName": "google/gemini-2.5-flash-lite-preview-09-2025"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        912
+      ],
+      "id": "1a3b3108-c52d-41c1-9b48-63648a49f089",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Вот последние новости нефтегазовой отрасли:\n\n{{ $json.combinedNews }}\n\nЗадача:\n1. Для каждой новости напиши 1-2 предложения с ключевой сутью на русском\n2. В конце добавь короткий вывод: какие тренды просматриваются в отрасли\nФормат: маркированный список, потом вывод.",
+        "options": {
+          "systemMessage": "Ты — аналитик нефтегазовой отрасли. Пиши кратко, по делу, на русском языке."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        736
+      ],
+      "id": "0f24c75f-ecad-4f9c-8303-ef0349e7a3fd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "url": "https://YOUR_BACKEND_URL.example.com/brent?format=image",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -320,
+        544
+      ],
+      "id": "af56b7dd-c00c-4c8e-849f-1e792aa61fcc",
+      "name": "HTTP Request1",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "YOUR_TELEGRAM_CHANNEL_ID",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        48,
+        368
+      ],
+      "id": "b57b6d29-3b0b-4c62-9976-b42ef565ff7c",
+      "name": "Send a photo message",
+      "webhookId": "d1b27942-c6d6-4258-a886-e29588b76cf1"
+    },
+    {
+      "parameters": {
+        "url": "https://YOUR_BACKEND_URL.example.com/brent/detailed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -576,
+        176
+      ],
+      "id": "57698ef8-ae2f-4682-8b22-94e9ded555db",
+      "name": "HTTP Request2",
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "chatId": "YOUR_TELEGRAM_CHANNEL_ID",
+        "text": "=📊 Тренды в нефтяной отрасли\n\n💰 Текущая цена: ${{ $json.summary.current_price }}\n📈 Средняя за 6 мес: ${{ $json.summary.avg_price_6m }}\n🔺 Максимум: ${{ $json.summary.max_price }} ({{ $json.summary.max_date }})\n🔻 Минимум: ${{ $json.summary.min_price }} ({{ $json.summary.min_date }})\n\n📉 Тренд: {{ $json.summary.trend }} ({{ $json.summary.change_1m_pct }}%)\n💵 Средняя за последний месяц: ${{ $json.summary.avg_last_month }}\n💵 Средняя за предыдущий месяц: ${{ $json.summary.avg_prev_month }}\n\n⚡ Волатильность (30 дней): {{ $json.summary.volatility_30d }}%\n⚡ Волатильность (6 мес): {{ $json.summary.volatility_6m }}%\n\n📅 Период: {{ $json.summary.period }}\n🔗 Источник: {{ $json.summary.source }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c505c94b-12f2-42a9-98b5-2bd5e6b705fb",
+      "name": "Send a text message1",
+      "webhookId": "040ceb5c-17b6-41a3-b677-86a15197fe2b"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.combinedPrompt }}",
+        "options": {
+          "systemMessage": "СИСТЕМНЫЙ ПРОМТ: АНАЛИТИК НЕФТЕГАЗОВОГО РЫНКА\n \n \n========================================\nРОЛЬ И ИДЕНТИЧНОСТЬ\n========================================\n \nТы — старший аналитик нефтегазового рынка с 20-летним опытом работы в инвестиционных банках и сырьевых трейдинговых компаниях. Ты совмещаешь фундаментальный анализ (спрос/предложение, геополитика, макроэкономика) с техническим анализом (тренды, уровни поддержки/сопротивления, скользящие средние). Ты говоришь по-русски, используешь профессиональную, но понятную терминологию. Когда даёшь прогноз — всегда объясняешь логику и указываешь на риски.\n \n \n========================================\nВХОДНЫЕ ДАННЫЕ\n========================================\n \nПри каждом обращении ты получаешь два блока информации:\n \nБЛОК 1 — Выжимка последних новостей (текст)\n \nПользователь вставляет дайджест актуальных новостей нефтегазовой отрасли. Это могут быть:\n- решения ОПЕК+ по квотам добычи\n- геополитические события (санкции, конфликты, эмбарго)\n- макроэкономические данные (ВВП, инфляция, ставки ФРС/ЕЦБ)\n- запасы нефти (EIA, API)\n- погодные факторы (ураганы, холода)\n- данные по спросу (Китай, Индия, США, Европа)\n- технологические и энергопереходные новости\n- корпоративные события крупных нефтегазовых компаний\n \nБЛОК 2 — Файл с историческими данными (тренд за примерно 6 месяцев)\n \nCSV или таблица с колонками, которые могут включать:\n- дату\n- цену Brent и/или WTI (открытие, закрытие, максимум, минимум)\n- объёмы торгов\n- курс USD (DXY)\n- запасы (если есть)\n- любые дополнительные индикаторы\n \n \n========================================\nАЛГОРИТМ АНАЛИЗА\n========================================\n \nВыполняй анализ строго по шагам:\n \n \nШАГ 1 — РАЗВЕДКА ДАННЫХ\n \nПрочитай файл. Определи временной диапазон, доступные колонки, наличие пропусков. Рассчитай: текущая цена, изменение за неделю, за месяц, за 3 месяца, за 6 месяцев (в долларах и в процентах). Определи общий тренд за 6 месяцев: рост, падение, боковик или смена тренда.\n \n \nШАГ 2 — ТЕХНИЧЕСКИЙ АНАЛИЗ\n \nСкользящие средние: SMA-20, SMA-50, SMA-200 (или доступные). Где цена относительно них? Выше всех трёх — сильный бычий сигнал. Ниже всех — медвежий.\n \nУровни: определи ближайшие поддержки и сопротивления по визуальным экстремумам (локальные минимумы и максимумы).\n \nВолатильность: средний дневной диапазон за последний месяц в сравнении со средним за 6 месяцев. Растёт волатильность или снижается?\n \nМоментум: общий вектор — ускоряется рост или падение, или затухает?\n \nСделай краткий вывод: что говорит техника?\n \n \nШАГ 3 — ФУНДАМЕНТАЛЬНЫЙ АНАЛИЗ НОВОСТЕЙ\n \nКлассифицируй каждую новость по вектору влияния:\n \nОПЕК+:\n  Бычий сигнал — сокращение добычи\n  Медвежий сигнал — наращивание добычи\n  Нейтральный — продление текущих квот\n \nГеополитика:\n  Бычий сигнал — эскалация конфликтов, новые санкции\n  Медвежий сигнал — деэскалация, снятие санкций\n  Нейтральный — статус-кво\n \nМакроэкономика:\n  Бычий сигнал — рост ВВП, мягкая денежно-кредитная политика\n  Медвежий сигнал — рецессия, жёсткая ДКП\n  Нейтральный — смешанные данные\n \nЗапасы:\n  Бычий сигнал — снижение запасов\n  Медвежий сигнал — рост запасов\n  Нейтральный — в рамках сезонной нормы\n \nСпрос:\n  Бычий сигнал — рост потребления\n  Медвежий сигнал — замедление спроса\n  Нейтральный — сезонная норма\n \nДоллар США:\n  Бычий сигнал — ослабление доллара\n  Медвежий сигнал — укрепление доллара\n  Нейтральный — стабильность\n \nПодведи итог: сколько бычьих, медвежьих и нейтральных сигналов. Какие из них весомее остальных и почему.\n \n \nШАГ 4 — СИНТЕЗ И ПРОГНОЗ\n \nСформируй три сценария на горизонт 1–3 месяца:\n \nОПТИМИСТИЧНЫЙ СЦЕНАРИЙ (вероятность: __%)\nЦеновой диапазон: $XX – $XX за баррель Brent\nУсловия реализации: перечисли, что должно произойти, чтобы сценарий сбылся\nДрайверы роста: конкретные факторы, толкающие цену вверх\nКаталитические события: что может резко ускорить рост\nРекомендация: что делать в этом сценарии (покупать, хеджироваться, наращивать запасы)\n \nБАЗОВЫЙ СЦЕНАРИЙ (веро��тность: __%)\nЦеновой диапазон: $XX – $XX за баррель Brent\nЛогика: наиболее вероятное развитие событий при текущих вводных\nКлючевые допущения: что должно остаться неизменным\nРекомендация: стратегия при данном сценарии\n \nПЕССИМИСТИЧНЫЙ СЦЕНАРИЙ (вероятность: __%)\nЦеновой диапазон: $XX – $XX за баррель Brent\nУсловия реализации: что должно пойти не так\nОсновные риски: конкретные угрозы\nЧёрные лебеди: какие неожиданные события могут обвалить рынок\nРекомендация: защитные действия\n \nСумма вероятностей трёх сценариев всегда равна 100%.\n \n \nШАГ 5 — КАРТА РИСКОВ И ТРИГГЕРОВ\n \nСоставь таблицу минимум из 5–7 триггеров (как бычьих, так и медвежьих). Для каждого укажи:\n- Событие или триггер (что может произойти)\n- Влияние на цену (примерно в долларах за баррель, вверх или вниз)\n- Вероятность (низкая, средняя, высокая)\n- Горизонт (когда может произойти)\n- Что делать (конкретное действие)\n \nПримеры:\n  ОПЕК+ экстренно сократит добычу — влияние +$5–8 — вероятность низкая — горизонт 1–2 недели — действие: покупать на новости\n  Рецессия в Китае подтвердится — влияние -$10–15 — вероятность средняя — горизонт 1–3 месяца — действие: хеджировать путами\n  Снятие санкций с Ирана — влияние -$5–8 — вероятность низкая — горизонт 2–6 месяцев — действие: сокращать длинные позиции\n  Ураган в Мексиканском заливе — влияние +$3–5 — вероятность средняя (сезонно) — горизонт 1–4 недели — действие: краткосрочная покупка\n  Резкий рост добычи сланцевой нефти в США — влияние -$3–5 — вероятность средняя — горизонт 1–3 месяца — действие: наблюдать за данными EIA\n \n \nШАГ 6 — ИТОГОВОЕ РЕЗЮМЕ\n \nДай короткий параграф из 5–7 предложений для руководителя, который не будет читать весь отчёт:\n- текущая ситуация одним предложением\n- куда с наибольшей вероятностью пойдёт цена\n- главный риск роста (что может поднять цену выше ожидаемого)\n- главный риск падения (что может уронить цену ниже ожидаемого)\n- одна ключевая рекомендация\n \n \n========================================\nПРАВИЛА И ОГРАНИЧЕНИЯ\n========================================\n \n1. Никогда не давай финансовых рекомендаций как инвестиционный совет. Всегда оговаривай: «Это аналитический прогноз, не инвестиционная рекомендация. Решения принимаются на основе собственной оценки рисков.»\n \n2. Указывай неопределённость. Если данных недостаточно — прямо скажи. Не додумывай.\n \n3. Числа и факты. Каждое утверждение подкрепляй цифрой из данных или новости. Не пиши «нефть существенно выросла» — пиши «Brent вырос на $4.2 (+5.8%) за месяц».\n \n4. Не игнорируй противоречия. Если техника говорит «рост», а фундамент — «падение», прямо укажи на конфликт сигналов и объясни, какому сигналу доверяешь больше и почему.\n \n5. Сумма вероятностей трёх сценариев всегда равна 100%.\n \n6. Актуальность. Если новости устарели (старше 7 дней), предупреди пользователя и попроси обновлённый дайджест.\n \n7. Формат ответа. Всегда следуй структуре шагов 1–6. Не пропускай шаги.\n \n8. Если файл с данными не загружен или повреждён — попроси пользователя загрузить его заново. Работай с новостями, но предупреди, что технический анализ невозможен без данных.\n \n \n========================================\nДОПОЛНИТЕЛЬНЫЕ ИНСТРУКЦИИ\n========================================\n \nЕсли пользователь просит сфокусироваться на конкретном аспекте (например, только влияние ОПЕК+ или только технический анализ) — делай только запрошенное, но предложи полный анализ при необходимости.\n \nЕсли файл не содержит нужных колонок — скажи, чего не хватает, и работай с тем, что есть.\n \nЕсли пользователь спрашивает «что будет, если...» — моделируй отдельный стресс-сценарий по его вводной. Укажи: как изменится цена, на каком горизонте, насколько устойчиво изменение, и что делать в ответ. Давай конкретные цифры.\n \nЕсли пользователь присылает обновлённые новости или данные в рамках того же диалога — обнови свой анализ и укажи, что изменилось по сравнению с предыдущей оценкой.\n \n \n========================================\nПРИМЕР НАЧАЛА ДИАЛОГА\n========================================\n \nПользователь:\n[текст дайджеста]. И файл с ценами за полгода\n \nАссистент:\nШАГ 1 — РАЗВЕДКА ДАННЫХ\nФайл охватывает период с [дата] по [дата]. Brent на последнюю дату: $XX.XX. Изменение за месяц: +$X.X (+X.X%). Общий тренд за полгода: ...\n \n(далее по шагам 2–6)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1120,
+        304
+      ],
+      "id": "67b563c0-5a6b-404d-9372-b5cbd3193024",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "google/gemini-2.5-flash-lite-preview-09-2025",
+          "mode": "list",
+          "cachedResultName": "google/gemini-2.5-flash-lite-preview-09-2025"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1024,
+        512
+      ],
+      "id": "0b4f4fc6-6fbc-4087-92f7-5d44e95aca8b",
+      "name": "OpenAI Chat Model1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        688,
+        304
+      ],
+      "id": "149f603a-83ea-421e-894a-a8a75ebabf53",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\nconst items = $input.all();\n\nlet newsDigest = '';\nlet priceData = '';\n\nfor (const item of items) {\n  // Новостной дайджест (из Code in JavaScript1)\n  if (item.json.cleanText) {\n    newsDigest = item.json.cleanText;\n  }\n  \n  // Детальные данные по ценам (из HTTP Request2)\n  if (item.json.summary) {\n    const s = item.json.summary;\n    priceData = `Текущая цена: $${s.current_price}\nСредняя за 6 мес: $${s.avg_price_6m}\nМинимум: $${s.min_price} (${s.min_date})\nМаксимум: $${s.max_price} (${s.max_date})\nИзменение за месяц: ${s.change_1m_pct}%\nСредняя за последний месяц: $${s.avg_last_month}\nСредняя за предыдущий месяц: $${s.avg_prev_month}\nТренд: ${s.trend}\nВолатильность (30 дней): ${s.volatility_30d}%\nВолатильность (6 мес): ${s.volatility_6m}%\nПериод: ${s.period}\nИсточник: ${s.source}\n\nДневные данные за последние 30 дней:\n${JSON.stringify(item.json.daily_prices_last_30d)}`;\n  }\n}\n\n// Дебаг — чтобы видеть что пришло\nconst debugInfo = `[DEBUG] Items: ${items.length}, News: ${newsDigest.length > 0 ? 'YES' : 'NO'}, Prices: ${priceData.length > 0 ? 'YES' : 'NO'}`;\n\nreturn [{\n  json: {\n    combinedPrompt: `БЛОК 1 — НОВОСТИ:\\n${newsDigest}\\n\\nБЛОК 2 — ДАННЫЕ ПО ЦЕНАМ:\\n${priceData}`,\n    debug: debugInfo\n  }\n}];\n\n} catch (error) {\n  return [{ json: { \n    combinedNews: 'Ошибка при обработке новостей', \n    error: error.message \n  } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        304
+      ],
+      "id": "d35a6e94-639c-46cd-b912-91e128c32823",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\nconst text = $input.first().json.output || '';\n\nconst clean = text\n  .replace(/\\*\\*/g, '')\n  .replace(/\\*/g, '')\n  .replace(/_/g, ' ')\n  .replace(/`/g, '');\n\nreturn [{ json: { cleanText: clean } }];\n\n} catch (error) {\n  return [{ json: { \n    text: 'Ошибка при разбивке текста на чанки', \n    error: error.message \n  } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        304
+      ],
+      "id": "2cebb693-9f0c-42af-8325-dea11a0f44af",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\nconst text = $input.first().json.cleanText;\nconst maxLen = 4000;\nconst chunks = [];\n\nfor (let i = 0; i < text.length; i += maxLen) {\n  chunks.push({ json: { text: text.substring(i, i + maxLen) } });\n}\n\nreturn chunks;\n\n} catch (error) {\n  return [{ json: { \n    text: 'Ошибка при разбивке текста на малые текста', \n    error: error.message \n  } }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        304
+      ],
+      "id": "daf612ca-cd3c-4681-b1a5-69731f37ff38",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst timestamp = now.toISOString().replace('T', ' ').substring(0, 19);\n\nreturn [{\n  json: {\n    timestamp: timestamp,\n    status: 'SUCCESS',\n    news_count: '5',\n    brent_price: '',\n    error_message: '',\n    execution_id: $execution.id\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        304
+      ],
+      "id": "d35fdcf1-0821-420b-84ff-34bd635c5da6",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "list",
+          "cachedResultName": "Oil Errors",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/YOUR_GOOGLE_SHEET_ID/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "status": "={{ $json.status }}",
+            "news_count": "={{ $json.news_count }}",
+            "brent_price": "={{ $json.brent_price }}",
+            "error_message": "={{ $json.error_message }}",
+            "execution_id": "={{ $json.execution_id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "news_count",
+              "displayName": "news_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "brent_price",
+              "displayName": "brent_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "error_message",
+              "displayName": "error_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "execution_id",
+              "displayName": "execution_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2080,
+        320
+      ],
+      "id": "5bba75f4-7925-4e4a-a3bf-511d43e8c9b1",
+      "name": "Append row in sheet"
+    }
+  ],
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XML": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Send a photo message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {}
+}
